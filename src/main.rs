@@ -4,7 +4,7 @@ mod gui;
 
 use gui::{ConfigGUI, ConfigWidget};
 
-const APP_ID: &str = "dev.adamperkowski.hyprlandgui";
+const APP_ID: &str = "nnyyxxxx.hyprgui";
 
 fn main() -> gtk::glib::ExitCode {
     let app = Application::builder().application_id(APP_ID).build();
