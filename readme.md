@@ -8,4 +8,6 @@
 ### Todo
 
 - [ ] Implement GUI
+- [x] Implement parser
 - [ ] Improve readme
+- [ ] Improve parser
