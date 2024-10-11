@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install libpango
+          sudo apt install libpango1.0-dev
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
