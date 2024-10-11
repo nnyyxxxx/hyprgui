@@ -11,8 +11,9 @@ fn main() {
     let mut parsed_config = parse_config(&config_str);
 
     parsed_config.add_entry("general", "new_option = value");
-    parsed_config.add_entry("exec", "some_command --with-args");
-    parsed_config.add_entry("bind", "$mod, T, exec, kitty");
+    parsed_config.add_entry("decoration", "rounding = 10");
+    parsed_config.add_entry("decoration", "blur" "enabled = true");
+    parsed_config.add_entry("decoration", "blur" "size = 10");
 
     let updated_config_str = parsed_config.to_string();
 

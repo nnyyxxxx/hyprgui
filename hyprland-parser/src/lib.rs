@@ -35,7 +35,7 @@ impl HyprlandConfig {
         for (category, entries) in &self.added_entries {
             for entry in entries {
                 if !self.entry_exists(category, entry) {
-                    result.push_str(&format!("\n{} = {}", category, entry));
+                    result.push_str(&format!("\n{}", entry));
                 }
             }
         }
@@ -43,8 +43,7 @@ impl HyprlandConfig {
     }
 
     fn entry_exists(&self, category: &str, entry: &str) -> bool {
-        let full_entry = format!("{} = {}", category, entry);
-        self.content.iter().any(|line| line.trim() == full_entry)
+        self.content.iter().any(|line| line.trim() == entry)
     }
 
     pub fn add_entry(&mut self, category: &str, entry: &str) {
@@ -56,7 +55,7 @@ impl HyprlandConfig {
                     .map(|pos| section_start + pos)
                     .unwrap_or(self.content.len());
                 self.content
-                    .insert(insert_position, format!("    {} = {}", category, entry));
+                    .insert(insert_position, format!("    {}", entry));
             } else {
                 self.added_entries
                     .entry(category.to_string())
