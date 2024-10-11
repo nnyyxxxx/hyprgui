@@ -15,7 +15,7 @@
 ### Credits
 
 - [Adam](https://github.com/adamperkowski) - For implementing the GUI and maintaining alongside myself
-- [nnyyxxxxx](https://github.com/nnyyxxxxx) - For implementing the parser and maintaining the project
+- [Nyx](https://github.com/nnyyxxxxx) - For implementing the parser and maintaining the project
 - [Vaxry](https://github.com/Vaxry) - For Hyprland
 - [rust-gtk](https://github.com/gtk-rs/gtk4-rs) - For gtk4 implementation
 - [Hyprland](https://github.com/hyprwm/Hyprland) - The window manager
