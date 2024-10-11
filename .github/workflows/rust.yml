@@ -39,6 +39,8 @@ jobs:
     needs: build
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Run cargo clippy
         run: |
           cargo clippy -- -Dwarnings
