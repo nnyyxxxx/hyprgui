@@ -10,9 +10,9 @@ fn main() {
 
     let mut parsed_config = parse_config(&config_str);
 
-    parsed_config.insert_general("new_option".to_string(), "value".to_string());
-    parsed_config.add_exec("some_command --with-args".to_string());
-    parsed_config.add_bind("$mod, T, exec, kitty".to_string());
+    parsed_config.add_entry("general", "new_option = value");
+    parsed_config.add_entry("exec", "some_command --with-args");
+    parsed_config.add_entry("bind", "$mod, T, exec, kitty");
 
     let updated_config_str = parsed_config.to_string();
 
