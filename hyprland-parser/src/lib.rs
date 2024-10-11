@@ -78,7 +78,7 @@ impl HyprlandConfig {
                 self.content
                     .insert(insert_pos + 2, format!("{}}}", "    ".repeat(depth)));
 
-                for (section, &mut (ref mut start, ref mut end)) in self.sections.iter_mut() {
+                for (start, end) in self.sections.values_mut() {
                     if *start >= insert_pos {
                         *start += 3;
                         *end += 3;
@@ -86,6 +86,7 @@ impl HyprlandConfig {
                         *end += 3;
                     }
                 }
+
                 self.sections
                     .insert(current_section.clone(), (insert_pos, insert_pos + 2));
                 return;
