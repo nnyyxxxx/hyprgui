@@ -40,6 +40,7 @@ impl HyprlandConfig {
         let parts: Vec<&str> = category.split('.').collect();
         let mut current_section = String::new();
         let mut depth = 0;
+        let mut insert_pos = self.content.len();
 
         for (i, part) in parts.iter().enumerate() {
             if i > 0 {
@@ -48,6 +49,7 @@ impl HyprlandConfig {
             current_section.push_str(part);
 
             if let Some(&(start, end)) = self.sections.get(&current_section) {
+                insert_pos = end;
                 if i == parts.len() - 1 {
                     let key = entry.split('=').next().unwrap().trim();
                     let existing_line = self.content[start..=end]
@@ -60,39 +62,40 @@ impl HyprlandConfig {
                     } else {
                         self.content
                             .insert(end, format!("{}{}", "    ".repeat(depth + 1), entry));
+                        self.update_sections(end, 1);
                     }
                     return;
                 }
             } else {
                 let new_section = format!("{}{} {{", "    ".repeat(depth), part);
-                let insert_pos = if let Some(&(_, end)) = self.sections.get(&parts[..i].join(".")) {
-                    end + 1
-                } else {
-                    self.content.len()
-                };
                 self.content.insert(insert_pos, new_section);
-                self.content.insert(
-                    insert_pos + 1,
-                    format!("{}{}", "    ".repeat(depth + 1), entry),
-                );
-                self.content
-                    .insert(insert_pos + 2, format!("{}}}", "    ".repeat(depth)));
-
-                for (start, end) in self.sections.values_mut() {
-                    if *start >= insert_pos {
-                        *start += 3;
-                        *end += 3;
-                    } else if *end >= insert_pos {
-                        *end += 3;
-                    }
+                insert_pos += 1;
+                if i == parts.len() - 1 {
+                    self.content
+                        .insert(insert_pos, format!("{}{}", "    ".repeat(depth + 1), entry));
+                    insert_pos += 1;
                 }
+                self.content
+                    .insert(insert_pos, format!("{}}}", "    ".repeat(depth)));
 
+                self.update_sections(insert_pos - 2, 3);
                 self.sections
-                    .insert(current_section.clone(), (insert_pos, insert_pos + 2));
-                return;
+                    .insert(current_section.clone(), (insert_pos - 2, insert_pos));
+                insert_pos += 1;
             }
 
             depth += 1;
+        }
+    }
+
+    fn update_sections(&mut self, pos: usize, offset: usize) {
+        for (start, end) in self.sections.values_mut() {
+            if *start >= pos {
+                *start += offset;
+                *end += offset;
+            } else if *end >= pos {
+                *end += offset;
+            }
         }
     }
 }
