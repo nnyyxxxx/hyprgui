@@ -5,7 +5,7 @@
 
 ---
 
-## Todo
+### Todo
 
 - [ ] Implement GUI
 - [ ] Improve readme
