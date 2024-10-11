@@ -1,6 +1,8 @@
+use std::collections::HashMap;
+
 use gtk::{
-    prelude::*, Application, ApplicationWindow, Box, Button, FileChooserAction, FileChooserDialog,
-    FileFilter, HeaderBar, Orientation, ResponseType,
+    prelude::*, Application, ApplicationWindow, Box, Button, CheckButton, FileChooserAction,
+    FileChooserDialog, FileFilter, HeaderBar, Notebook, Orientation, ResponseType,
 };
 
 pub struct ConfigGUI {
@@ -8,6 +10,11 @@ pub struct ConfigGUI {
     box_: Box,
     header_bar: HeaderBar,
     pub open_button: Button,
+}
+
+pub struct ConfigWidget {
+    config_path: String,
+    option_checkboxes: HashMap<String, CheckButton>,
 }
 
 impl ConfigGUI {
@@ -77,5 +84,21 @@ impl ConfigGUI {
         });
 
         dialog.show();
+    }
+}
+
+impl ConfigWidget {
+    pub fn new(config_path: String) -> Self {
+        let widget = ConfigWidget {
+            config_path,
+            option_checkboxes: HashMap::new(),
+        };
+
+        widget.build_ui();
+        widget
+    }
+
+    fn build_ui(&self) {
+        let notebook = Notebook::new();
     }
 }

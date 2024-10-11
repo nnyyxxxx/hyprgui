@@ -1,8 +1,8 @@
 use gtk::{prelude::*, Application};
 
-mod config_gui;
+mod gui;
 
-use config_gui::ConfigGUI;
+use gui::{ConfigGUI, ConfigWidget};
 
 const APP_ID: &str = "dev.adamperkowski.hyprlandgui";
 
