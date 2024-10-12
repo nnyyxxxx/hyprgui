@@ -1544,26 +1544,54 @@ impl ConfigWidget {
         desc_label.set_opacity(0.7);
         vbox.append(&desc_label);
 
-        let entry = Entry::new();
-        entry.set_width_request(50);
-        entry.set_halign(gtk::Align::End);
+        let control_box = Box::new(Orientation::Horizontal, 5);
+        control_box.set_halign(gtk::Align::End);
 
-        let button_box = Box::new(Orientation::Horizontal, 0);
-        button_box.set_halign(gtk::Align::End);
-        let minus_button = Button::with_label("-");
+        let value_label = Label::new(Some("0"));
+        value_label.set_width_request(20);
+        value_label.set_halign(gtk::Align::End);
+
+        let button_box = Box::new(Orientation::Horizontal, 2);
+
+        let minus_button = Button::new();
+        minus_button.set_label("-");
         minus_button.add_css_class("circular");
-        let plus_button = Button::with_label("+");
+        minus_button.set_size_request(18, 18);
+
+        let plus_button = Button::new();
+        plus_button.set_label("+");
         plus_button.add_css_class("circular");
+        plus_button.set_size_request(18, 18);
+
+        let value = Rc::new(RefCell::new(0));
+
+        let value_clone = value.clone();
+        let value_label_clone = value_label.clone();
+        minus_button.connect_clicked(move |_| {
+            let mut current_value = value_clone.borrow_mut();
+            *current_value -= 1;
+            value_label_clone.set_text(&current_value.to_string());
+        });
+
+        let value_clone = value.clone();
+        let value_label_clone = value_label.clone();
+        plus_button.connect_clicked(move |_| {
+            let mut current_value = value_clone.borrow_mut();
+            *current_value += 1;
+            value_label_clone.set_text(&current_value.to_string());
+        });
+
+        control_box.append(&value_label);
         button_box.append(&minus_button);
         button_box.append(&plus_button);
+        control_box.append(&button_box);
 
         hbox.append(&vbox);
-        hbox.append(&entry);
-        hbox.append(&button_box);
+        hbox.append(&control_box);
 
         container.append(&hbox);
 
-        options.insert(name.to_string(), entry.upcast());
+        options.insert(name.to_string(), value_label.upcast());
     }
 
     fn add_bool_option(
