@@ -6,7 +6,7 @@ use gtk::{
     Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
 };
 
-use hyprland_parser::HyprlandConfig;
+use hyprparser::HyprlandConfig;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
@@ -1156,8 +1156,8 @@ impl ConfigWidget {
             } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
                 checkbox.set_active(value == "true");
             } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
-                if let Some(color) = parse_color(&value) {
-                    color_button.set_rgba(&color);
+                if let Some((red, green, blue, alpha)) = config.parse_color(&value) {
+                    color_button.set_rgba(&gdk::RGBA::new(red, green, blue, alpha));
                 }
             }
         }
@@ -1184,7 +1184,8 @@ impl ConfigWidget {
             } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
                 checkbox.is_active().to_string()
             } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
-                format_color(&color_button.rgba())
+                let rgba = color_button.rgba();
+                config.format_color(rgba.red(), rgba.green(), rgba.blue(), rgba.alpha())
             } else {
                 continue;
             };
@@ -1238,46 +1239,4 @@ impl ConfigWidget {
 
         options.insert(name.to_string(), color_button.upcast());
     }
-}
-
-fn parse_color(color_str: &str) -> Option<gdk::RGBA> {
-    if color_str.starts_with("rgba(") {
-        let rgba = color_str.trim_start_matches("rgba(").trim_end_matches(')');
-        let rgba = u32::from_str_radix(rgba, 16).ok()?;
-        Some(gdk::RGBA::new(
-            ((rgba >> 24) & 0xFF) as f32 / 255.0,
-            ((rgba >> 16) & 0xFF) as f32 / 255.0,
-            ((rgba >> 8) & 0xFF) as f32 / 255.0,
-            (rgba & 0xFF) as f32 / 255.0,
-        ))
-    } else if color_str.starts_with("rgb(") {
-        let rgb = color_str.trim_start_matches("rgb(").trim_end_matches(')');
-        let rgb = u32::from_str_radix(rgb, 16).ok()?;
-        Some(gdk::RGBA::new(
-            ((rgb >> 16) & 0xFF) as f32 / 255.0,
-            ((rgb >> 8) & 0xFF) as f32 / 255.0,
-            (rgb & 0xFF) as f32 / 255.0,
-            1.0,
-        ))
-    } else if color_str.starts_with("0x") {
-        let argb = u32::from_str_radix(&color_str[2..], 16).ok()?;
-        Some(gdk::RGBA::new(
-            ((argb >> 16) & 0xFF) as f32 / 255.0,
-            ((argb >> 8) & 0xFF) as f32 / 255.0,
-            (argb & 0xFF) as f32 / 255.0,
-            ((argb >> 24) & 0xFF) as f32 / 255.0,
-        ))
-    } else {
-        None
-    }
-}
-
-fn format_color(color: &gdk::RGBA) -> String {
-    format!(
-        "rgba({:02x}{:02x}{:02x}{:02x})",
-        (color.red() * 255.0) as u8,
-        (color.green() * 255.0) as u8,
-        (color.blue() * 255.0) as u8,
-        (color.alpha() * 255.0) as u8
-    )
 }
