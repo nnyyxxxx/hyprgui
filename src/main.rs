@@ -45,13 +45,18 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
     };
 
     let mut parsed_config = parse_config(&config_str);
+    let changes = gui_ref.get_changes();
 
-    gui_ref.save_config(&mut parsed_config);
+    if !changes.borrow().is_empty() {
+        gui_ref.apply_changes(&mut parsed_config);
 
-    let updated_config_str = parsed_config.to_string();
+        let updated_config_str = parsed_config.to_string();
 
-    match fs::write(&path, updated_config_str) {
-        Ok(_) => println!("Configuration saved successfully to {}", path),
-        Err(e) => eprintln!("Error saving configuration: {}", e),
+        match fs::write(&path, updated_config_str) {
+            Ok(_) => println!("Configuration saved successfully to {}", path),
+            Err(e) => eprintln!("Error saving configuration: {}", e),
+        }
+    } else {
+        println!("No changes to save.");
     }
 }

@@ -6,13 +6,16 @@ use gtk::{
 };
 
 use hyprparser::HyprlandConfig;
-use std::collections::HashMap;
+use std::cell::RefCell;
+use std::collections::{HashMap, HashSet};
+use std::rc::Rc;
 
 pub struct ConfigGUI {
     pub window: ApplicationWindow,
     config_widgets: HashMap<String, ConfigWidget>,
     pub save_button: Button,
     content_box: Box,
+    changed_options: Rc<RefCell<HashSet<(String, String)>>>,
 }
 
 impl ConfigGUI {
@@ -45,6 +48,7 @@ impl ConfigGUI {
             config_widgets,
             save_button,
             content_box,
+            changed_options: Rc::new(RefCell::new(HashSet::new())),
         }
     }
 
@@ -81,13 +85,18 @@ impl ConfigGUI {
         }
 
         for (category, widget) in &self.config_widgets {
-            widget.load_config(config, category);
+            widget.load_config(config, category, self.changed_options.clone());
         }
     }
 
-    pub fn save_config(&self, config: &mut HyprlandConfig) {
+    pub fn get_changes(&self) -> Rc<RefCell<HashSet<(String, String)>>> {
+        self.changed_options.clone()
+    }
+
+    pub fn apply_changes(&self, config: &mut HyprlandConfig) {
+        let changes = self.changed_options.borrow();
         for (category, widget) in &self.config_widgets {
-            widget.save_config(config, category);
+            widget.apply_changes(config, category, &changes);
         }
     }
 }
@@ -1072,17 +1081,63 @@ impl ConfigWidget {
         options.insert(name.to_string(), entry.upcast());
     }
 
-    fn load_config(&self, config: &HyprlandConfig, category: &str) {
+    fn load_config(
+        &self,
+        config: &HyprlandConfig,
+        category: &str,
+        changed_options: Rc<RefCell<HashSet<(String, String)>>>,
+    ) {
         for (name, widget) in &self.options {
             let value = self.extract_value(config, category, name);
             if let Some(entry_widget) = widget.downcast_ref::<Entry>() {
                 entry_widget.set_text(&value);
+                let category = category.to_string();
+                let name = name.to_string();
+                let changed_options = changed_options.clone();
+                entry_widget.connect_changed(move |entry| {
+                    let mut changes = changed_options.borrow_mut();
+                    if entry.text() != value {
+                        changes.insert((category.clone(), name.clone()));
+                    } else {
+                        changes.remove(&(category.clone(), name.clone()));
+                    }
+                });
             } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
                 checkbox.set_active(value == "true");
+                let category = category.to_string();
+                let name = name.to_string();
+                let changed_options = changed_options.clone();
+                checkbox.connect_toggled(move |cb| {
+                    let mut changes = changed_options.borrow_mut();
+                    if cb.is_active().to_string() != value {
+                        changes.insert((category.clone(), name.clone()));
+                    } else {
+                        changes.remove(&(category.clone(), name.clone()));
+                    }
+                });
             } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
                 if let Some((red, green, blue, alpha)) = config.parse_color(&value) {
                     color_button.set_rgba(&gdk::RGBA::new(red, green, blue, alpha));
                 }
+                let category = category.to_string();
+                let name = name.to_string();
+                let changed_options = changed_options.clone();
+                color_button.connect_color_set(move |cb| {
+                    let mut changes = changed_options.borrow_mut();
+                    let new_color = cb.rgba();
+                    let new_value = format!(
+                        "rgba({},{},{},{})",
+                        new_color.red(),
+                        new_color.green(),
+                        new_color.blue(),
+                        new_color.alpha()
+                    );
+                    if new_value != value {
+                        changes.insert((category.clone(), name.clone()));
+                    } else {
+                        changes.remove(&(category.clone(), name.clone()));
+                    }
+                });
             }
         }
     }
@@ -1101,30 +1156,37 @@ impl ConfigWidget {
         String::new()
     }
 
-    fn save_config(&self, config: &mut HyprlandConfig, category: &str) {
+    fn apply_changes(
+        &self,
+        config: &mut HyprlandConfig,
+        category: &str,
+        changes: &HashSet<(String, String)>,
+    ) {
         for (name, widget) in &self.options {
-            let value = if let Some(entry) = widget.downcast_ref::<Entry>() {
-                entry.text().to_string()
-            } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
-                checkbox.is_active().to_string()
-            } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
-                let rgba = color_button.rgba();
-                config.format_color(rgba.red(), rgba.green(), rgba.blue(), rgba.alpha())
-            } else {
-                continue;
-            };
-
-            if !value.is_empty() {
-                if name.contains(':') {
-                    let parts: Vec<&str> = name.split(':').collect();
-                    if parts.len() == 2 {
-                        config.add_entry(
-                            &format!("{}.{}", category, parts[0]),
-                            &format!("{} = {}", parts[1], value),
-                        );
-                    }
+            if changes.contains(&(category.to_string(), name.to_string())) {
+                let value = if let Some(entry) = widget.downcast_ref::<Entry>() {
+                    entry.text().to_string()
+                } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
+                    checkbox.is_active().to_string()
+                } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
+                    let rgba = color_button.rgba();
+                    config.format_color(rgba.red(), rgba.green(), rgba.blue(), rgba.alpha())
                 } else {
-                    config.add_entry(category, &format!("{} = {}", name, value));
+                    continue;
+                };
+
+                if !value.is_empty() {
+                    if name.contains(':') {
+                        let parts: Vec<&str> = name.split(':').collect();
+                        if parts.len() == 2 {
+                            config.add_entry(
+                                &format!("{}.{}", category, parts[0]),
+                                &format!("{} = {}", parts[1], value),
+                            );
+                        }
+                    } else {
+                        config.add_entry(category, &format!("{} = {}", name, value));
+                    }
                 }
             }
         }
