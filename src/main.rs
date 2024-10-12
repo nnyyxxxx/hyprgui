@@ -42,13 +42,14 @@ fn open_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
         let parsed_config = parse_config(&config_str);
         gui_clone.borrow_mut().load_config(&parsed_config);
         gui_clone.borrow_mut().show_config_options();
+        gui_clone.borrow().set_opened_file_path(path);
     });
     println!("open_config_file function completed");
 }
 
 fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
-    let gui_clone = gui.clone();
-    gui.borrow().open_config_file(move |path| {
+    let gui_ref = gui.borrow();
+    if let Some(path) = gui_ref.get_opened_file_path() {
         let config_str = match fs::read_to_string(&path) {
             Ok(content) => content,
             Err(e) => {
@@ -59,7 +60,7 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
 
         let mut parsed_config = parse_config(&config_str);
 
-        gui_clone.borrow().save_config(&mut parsed_config);
+        gui_ref.save_config(&mut parsed_config);
 
         let updated_config_str = parsed_config.to_string();
 
@@ -67,5 +68,7 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
             Ok(_) => println!("Configuration saved successfully to {}", path),
             Err(e) => eprintln!("Error saving configuration: {}", e),
         }
-    });
+    } else {
+        eprintln!("No configuration file has been opened yet.");
+    }
 }

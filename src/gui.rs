@@ -6,6 +6,7 @@ use gtk::{
 };
 
 use hyprland_parser::HyprlandConfig;
+use std::cell::RefCell;
 use std::collections::HashMap;
 
 pub struct ConfigGUI {
@@ -14,6 +15,7 @@ pub struct ConfigGUI {
     pub open_button: Button,
     pub save_button: Button,
     content_box: Box,
+    opened_file_path: RefCell<Option<String>>,
 }
 
 impl ConfigGUI {
@@ -50,6 +52,7 @@ impl ConfigGUI {
             open_button,
             save_button,
             content_box,
+            opened_file_path: RefCell::new(None),
         }
     }
 
@@ -153,6 +156,14 @@ impl ConfigGUI {
                 glib::ControlFlow::Break
             }
         });
+    }
+
+    pub fn set_opened_file_path(&self, path: String) {
+        *self.opened_file_path.borrow_mut() = Some(path);
+    }
+
+    pub fn get_opened_file_path(&self) -> Option<String> {
+        self.opened_file_path.borrow().clone()
     }
 }
 
