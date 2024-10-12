@@ -1,5 +1,4 @@
 use gtk::gdk;
-use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
     Application, ApplicationWindow, Box, Button, CheckButton, ColorButton, Entry, Label,
@@ -7,16 +6,13 @@ use gtk::{
 };
 
 use hyprparser::HyprlandConfig;
-use std::cell::RefCell;
 use std::collections::HashMap;
 
 pub struct ConfigGUI {
     pub window: ApplicationWindow,
     config_widgets: HashMap<String, ConfigWidget>,
-    pub open_button: Button,
     pub save_button: Button,
     content_box: Box,
-    opened_file_path: RefCell<Option<String>>,
 }
 
 impl ConfigGUI {
@@ -29,13 +25,10 @@ impl ConfigGUI {
             .build();
 
         let main_box = Box::new(Orientation::Vertical, 0);
-        let open_button = Button::with_label("Open Config");
         let save_button = Button::with_label("Save");
-        save_button.set_visible(false);
 
         let button_box = Box::new(Orientation::Horizontal, 5);
         button_box.set_halign(gtk::Align::Center);
-        button_box.append(&open_button);
         button_box.append(&save_button);
 
         main_box.append(&button_box);
@@ -50,21 +43,9 @@ impl ConfigGUI {
         ConfigGUI {
             window,
             config_widgets,
-            open_button,
             save_button,
             content_box,
-            opened_file_path: RefCell::new(None),
         }
-    }
-
-    pub fn hide_config_options(&mut self) {
-        self.content_box.set_visible(false);
-        self.save_button.set_visible(false);
-    }
-
-    pub fn show_config_options(&mut self) {
-        self.content_box.set_visible(true);
-        self.save_button.set_visible(true);
     }
 
     pub fn load_config(&mut self, config: &HyprlandConfig) {
@@ -102,69 +83,12 @@ impl ConfigGUI {
         for (category, widget) in &self.config_widgets {
             widget.load_config(config, category);
         }
-
-        self.open_button.set_visible(false);
     }
 
     pub fn save_config(&self, config: &mut HyprlandConfig) {
         for (category, widget) in &self.config_widgets {
             widget.save_config(config, category);
         }
-    }
-
-    pub fn open_config_file<F>(&self, callback: F)
-    where
-        F: Fn(String) + 'static,
-    {
-        println!("open_config_file method called");
-        let file_chooser = gtk::FileChooserDialog::new(
-            Some("Open Config File"),
-            Some(&self.window),
-            gtk::FileChooserAction::Open,
-            &[
-                ("Cancel", gtk::ResponseType::Cancel),
-                ("Open", gtk::ResponseType::Accept),
-            ],
-        );
-
-        println!("FileChooserDialog created");
-
-        file_chooser.set_modal(true);
-
-        file_chooser.connect_response(move |dialog, response| {
-            println!("File chooser response: {:?}", response);
-            if response == gtk::ResponseType::Accept {
-                if let Some(file) = dialog.file() {
-                    if let Some(path) = file.path() {
-                        if let Some(path_str) = path.to_str() {
-                            println!("File selected: {}", path_str);
-                            callback(path_str.to_string());
-                        }
-                    }
-                }
-            }
-            dialog.close();
-        });
-
-        println!("About to show file chooser");
-        file_chooser.show();
-        println!("File chooser show() called");
-
-        glib::timeout_add_local(std::time::Duration::from_millis(100), move || {
-            if file_chooser.is_visible() {
-                glib::ControlFlow::Continue
-            } else {
-                glib::ControlFlow::Break
-            }
-        });
-    }
-
-    pub fn set_opened_file_path(&self, path: String) {
-        *self.opened_file_path.borrow_mut() = Some(path);
-    }
-
-    pub fn get_opened_file_path(&self) -> Option<String> {
-        self.opened_file_path.borrow().clone()
     }
 }
 
