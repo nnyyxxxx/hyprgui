@@ -1,7 +1,6 @@
 use gtk::prelude::*;
 use gtk::Application;
 use hyprparser::parse_config;
-use libc;
 use std::fs;
 use std::os::unix::io::AsRawFd;
 use std::{cell::RefCell, rc::Rc};
