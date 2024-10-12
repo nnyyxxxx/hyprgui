@@ -493,7 +493,7 @@ impl ConfigWidget {
                     "Configure keyboard behavior.",
                     first_section.clone(),
                 );
-                Self::add_string_option(
+                Self::add_int_option(
                     &container,
                     &mut options,
                     "kb_model",
@@ -1808,6 +1808,7 @@ impl ConfigWidget {
         hbox.set_margin_bottom(5);
 
         let label_box = Box::new(Orientation::Horizontal, 5);
+        label_box.set_hexpand(true);
 
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
@@ -1836,7 +1837,6 @@ impl ConfigWidget {
 
         let spin_button = gtk::SpinButton::with_range(-1000.0, 1000.0, 1.0);
         spin_button.set_halign(gtk::Align::End);
-        spin_button.set_hexpand(true);
         spin_button.set_width_request(100);
 
         hbox.append(&label_box);
@@ -1861,6 +1861,7 @@ impl ConfigWidget {
         hbox.set_margin_bottom(5);
 
         let label_box = Box::new(Orientation::Horizontal, 5);
+        label_box.set_hexpand(true);
 
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
@@ -1913,6 +1914,7 @@ impl ConfigWidget {
         hbox.set_margin_bottom(5);
 
         let label_box = Box::new(Orientation::Horizontal, 5);
+        label_box.set_hexpand(true);
 
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
@@ -1942,7 +1944,6 @@ impl ConfigWidget {
         let spin_button = gtk::SpinButton::with_range(-1000.0, 1000.0, 0.1);
         spin_button.set_digits(2);
         spin_button.set_halign(gtk::Align::End);
-        spin_button.set_hexpand(true);
         spin_button.set_width_request(100);
 
         hbox.append(&label_box);
@@ -1967,6 +1968,7 @@ impl ConfigWidget {
         hbox.set_margin_bottom(5);
 
         let label_box = Box::new(Orientation::Horizontal, 5);
+        label_box.set_hexpand(true);
 
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
@@ -1995,17 +1997,10 @@ impl ConfigWidget {
 
         let entry = Entry::new();
         entry.set_halign(gtk::Align::End);
-        entry.set_hexpand(true);
         entry.set_width_request(100);
 
-        let control_box = Box::new(Orientation::Horizontal, 5);
-        control_box.set_halign(gtk::Align::End);
-        control_box.set_hexpand(true);
-
-        control_box.append(&entry);
-
         hbox.append(&label_box);
-        hbox.append(&control_box);
+        hbox.append(&entry);
 
         container.append(&hbox);
 
@@ -2026,6 +2021,7 @@ impl ConfigWidget {
         hbox.set_margin_bottom(5);
 
         let label_box = Box::new(Orientation::Horizontal, 5);
+        label_box.set_hexpand(true);
 
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
