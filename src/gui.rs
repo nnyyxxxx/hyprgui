@@ -102,12 +102,10 @@ impl ConfigGUI {
         self.open_button.set_visible(false);
     }
 
-    pub fn save_config(&self) -> HyprlandConfig {
-        let mut config = HyprlandConfig::new();
+    pub fn save_config(&self, config: &mut HyprlandConfig) {
         for (category, widget) in &self.config_widgets {
-            widget.save_config(&mut config, category);
+            widget.save_config(config, category);
         }
-        config
     }
 
     pub fn open_config_file<F>(&self, callback: F)
@@ -1172,7 +1170,20 @@ impl ConfigWidget {
             } else {
                 continue;
             };
-            config.add_entry(category, &format!("{} = {}", name, value));
+
+            if !value.is_empty() {
+                if name.contains(':') {
+                    let parts: Vec<&str> = name.split(':').collect();
+                    if parts.len() == 2 {
+                        config.add_entry(
+                            &format!("{}.{}", category, parts[0]),
+                            &format!("{} = {}", parts[1], value),
+                        );
+                    }
+                } else {
+                    config.add_entry(category, &format!("{} = {}", name, value));
+                }
+            }
         }
     }
 
