@@ -119,14 +119,14 @@ impl ConfigWidget {
 
         let mut options = HashMap::new();
 
+        Self::add_category_header(
+            &container,
+            &category.to_string().to_title_case(),
+            &format!("Configure {} settings.", category),
+        );
+
         match category {
             "general" => {
-                Self::add_category_header(
-                    &container,
-                    "General",
-                    "Gaps, borders, colors, cursor & layout settings.",
-                );
-
                 Self::add_section(&container, "Gaps", "Change gaps in & out, workspaces.");
                 Self::add_int_option(
                     &container,
@@ -1582,6 +1582,7 @@ impl ConfigWidget {
 
         let switch = Switch::new();
         switch.set_halign(gtk::Align::End);
+        switch.set_valign(gtk::Align::Center);
 
         hbox.append(&vbox);
         hbox.append(&switch);
