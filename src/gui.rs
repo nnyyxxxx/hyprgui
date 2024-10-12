@@ -83,15 +83,15 @@ impl ConfigGUI {
         self.content_box.append(&scrolled_window);
 
         for category in &[
-            "General",
-            "Decoration",
-            "Animations",
-            "Input",
-            "Gestures",
-            "Misc",
-            "Binds",
-            "WindowRules",
-            "Layouts",
+            "general",
+            "decoration",
+            "animations",
+            "input",
+            "gestures",
+            "misc",
+            "binds",
+            "windowrules",
+            "layouts",
         ] {
             let widget = ConfigWidget::new(category);
             stack.add_titled(&widget.container, Some(category), category);
@@ -183,7 +183,7 @@ impl ConfigWidget {
         let mut options = HashMap::new();
 
         match category {
-            "General" => {
+            "general" => {
                 Self::add_int_option(&container, &mut options, "border_size", "Border Size");
                 Self::add_bool_option(
                     &container,
@@ -251,7 +251,7 @@ impl ConfigWidget {
                 Self::add_bool_option(&container, &mut options, "allow_tearing", "Allow Tearing");
                 Self::add_int_option(&container, &mut options, "resize_corner", "Resize Corner");
             }
-            "Decoration" => {
+            "decoration" => {
                 Self::add_int_option(&container, &mut options, "rounding", "Rounding");
                 Self::add_float_option(
                     &container,
@@ -340,7 +340,7 @@ impl ConfigWidget {
                     "Blur Popups Ignore Alpha",
                 );
             }
-            "Animations" => {
+            "animations" => {
                 Self::add_bool_option(&container, &mut options, "enabled", "Enable Animations");
                 Self::add_bool_option(
                     &container,
@@ -349,7 +349,7 @@ impl ConfigWidget {
                     "First Launch Animation",
                 );
             }
-            "Input" => {
+            "input" => {
                 Self::add_string_option(&container, &mut options, "kb_model", "Keyboard Model");
                 Self::add_string_option(&container, &mut options, "kb_layout", "Keyboard Layout");
                 Self::add_string_option(&container, &mut options, "kb_variant", "Keyboard Variant");
@@ -521,7 +521,7 @@ impl ConfigWidget {
                     "Active Area Position",
                 );
             }
-            "Gestures" => {
+            "gestures" => {
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -714,7 +714,7 @@ impl ConfigWidget {
                     "Locked Inactive Color",
                 );
             }
-            "Misc" => {
+            "misc" => {
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -872,7 +872,7 @@ impl ConfigWidget {
                     "Disable XDG Env Checks",
                 );
             }
-            "Binds" => {
+            "binds" => {
                 Self::add_bool_option(
                     &container,
                     &mut options,
