@@ -1687,7 +1687,13 @@ impl ConfigWidget {
                     "Suppress Errors",
                     "If true, do not display config file parsing errors.",
                 );
-                Self::add_int_option(&container, &mut options, "watchdog_timeout", "Watchdog Timeout", "Sets the timeout in seconds for watchdog to abort processing of a signal of the main thread.");
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "watchdog_timeout",
+                    "Watchdog Timeout",
+                    "Sets the timeout in seconds for watchdog to abort processing of a signal of the main thread.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
