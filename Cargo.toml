@@ -17,4 +17,4 @@ edition = "2021"
 
 [dependencies]
 gtk = { version = "0.9.2", package = "gtk4" }
-hyprland-parser = { path = "hyprland-parser" }
+hyprland-parser = { git = "https://github.com/nnyyxxxx/hyprparser.git" }
