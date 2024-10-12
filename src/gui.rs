@@ -119,14 +119,13 @@ impl ConfigWidget {
 
         let mut options = HashMap::new();
 
-        Self::add_category_header(
-            &container,
-            &category.to_string().to_title_case(),
-            &format!("Configure {} settings.", category),
-        );
-
         match category {
             "general" => {
+                Self::add_section(
+                    &container,
+                    "General Settings",
+                    "Configure general behavior.",
+                );
                 Self::add_section(&container, "Gaps", "Change gaps in & out, workspaces.");
                 Self::add_int_option(
                     &container,
@@ -206,6 +205,11 @@ impl ConfigWidget {
                 );
             }
             "decoration" => {
+                Self::add_section(
+                    &container,
+                    "Window Decoration",
+                    "Configure window appearance.",
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -426,6 +430,11 @@ impl ConfigWidget {
                 );
             }
             "animations" => {
+                Self::add_section(
+                    &container,
+                    "Animation Settings",
+                    "Configure animation behavior.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -442,6 +451,12 @@ impl ConfigWidget {
                 );
             }
             "input" => {
+                Self::add_section(&container, "Input Settings", "Configure input devices.");
+                Self::add_section(
+                    &container,
+                    "Keyboard Settings",
+                    "Configure keyboard behavior.",
+                );
                 Self::add_string_option(
                     &container,
                     &mut options,
@@ -512,6 +527,8 @@ impl ConfigWidget {
                     "Repeat Delay",
                     "The repeat delay.",
                 );
+
+                Self::add_section(&container, "Mouse Settings", "Configure mouse behavior.");
                 Self::add_float_option(
                     &container,
                     &mut options,
@@ -539,13 +556,6 @@ impl ConfigWidget {
                     "left_handed",
                     "Left Handed",
                     "Enables left handed mode.",
-                );
-                Self::add_string_option(
-                    &container,
-                    &mut options,
-                    "scroll_points",
-                    "Scroll Points",
-                    "The scroll points.",
                 );
                 Self::add_string_option(
                     &container,
@@ -589,19 +599,28 @@ impl ConfigWidget {
                     "Follow Mouse",
                     "Follows the mouse.",
                 );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "focus_on_close",
-                    "Focus on Close",
-                    "Focuses on close.",
-                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "mouse_refocus",
                     "Mouse Refocus",
                     "Refocuses on mouse.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "scroll_points",
+                    "Scroll Points",
+                    "The scroll points.",
+                );
+
+                Self::add_section(&container, "Focus Settings", "Configure focus behavior.");
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "focus_on_close",
+                    "Focus on Close",
+                    "Focuses on close.",
                 );
                 Self::add_int_option(
                     &container,
@@ -617,21 +636,12 @@ impl ConfigWidget {
                     "Special Fallthrough",
                     "Enables special fallthrough.",
                 );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "off_window_axis_events",
-                    "Off Window Axis Events",
-                    "Enables off window axis events.",
-                );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "emulate_discrete_scroll",
-                    "Emulate Discrete Scroll",
-                    "Emulates discrete scroll.",
-                );
 
+                Self::add_section(
+                    &container,
+                    "Touchpad Settings",
+                    "Configure touchpad behavior.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -696,6 +706,11 @@ impl ConfigWidget {
                     "Enables tap and drag.",
                 );
 
+                Self::add_section(
+                    &container,
+                    "Touchscreen Settings",
+                    "Configure touchscreen behavior.",
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -718,6 +733,7 @@ impl ConfigWidget {
                     "Enables the touchdevice.",
                 );
 
+                Self::add_section(&container, "Tablet Settings", "Configure tablet behavior.");
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -774,8 +790,33 @@ impl ConfigWidget {
                     "Active Area Position",
                     "The active area position.",
                 );
+
+                Self::add_section(
+                    &container,
+                    "Miscellaneous Input Settings",
+                    "Other input-related settings.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "off_window_axis_events",
+                    "Off Window Axis Events",
+                    "Enables off window axis events.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "emulate_discrete_scroll",
+                    "Emulate Discrete Scroll",
+                    "Emulates discrete scroll.",
+                );
             }
             "gestures" => {
+                Self::add_section(
+                    &container,
+                    "Gesture Settings",
+                    "Configure gesture behavior.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -1050,7 +1091,7 @@ impl ConfigWidget {
                 Self::add_section(
                     &container,
                     "Miscellaneous Settings",
-                    "Various other configuration options.",
+                    "Configure miscellaneous behavior.",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1282,11 +1323,7 @@ impl ConfigWidget {
                 Self::add_int_option(&container, &mut options, "force_introspection", "Force Introspection", "Forces introspection at all times. Introspection is aimed at reducing GPU usage in certain cases, but might cause graphical glitches on nvidia.");
             }
             "render" => {
-                Self::add_section(
-                    &container,
-                    "Render Settings",
-                    "Configure rendering behavior.",
-                );
+                Self::add_section(&container, "Render Settings", "Configure render behavior.");
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -1389,7 +1426,7 @@ impl ConfigWidget {
                 Self::add_bool_option(&container, &mut options, "allow_dumb_copy", "Allow Dumb Copy", "Makes HW cursors work on Nvidia, at the cost of a possible hitch whenever the image changes.");
             }
             "debug" => {
-                Self::add_section(&container, "Debug Settings", "Configure debug options.");
+                Self::add_section(&container, "Debug Settings", "Configure debug behavior.");
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -1476,27 +1513,16 @@ impl ConfigWidget {
                     "Enables colors in the stdout logs.",
                 );
             }
-            _ => {}
+            _ => {
+                Self::add_section(
+                    &container,
+                    &format!("{} Settings", category),
+                    &format!("Configure {} behavior.", category),
+                );
+            }
         }
 
         ConfigWidget { container, options }
-    }
-
-    fn add_category_header(container: &Box, title: &str, description: &str) {
-        let header_box = Box::new(Orientation::Vertical, 5);
-        header_box.set_margin_bottom(20);
-
-        let title_label = Label::new(Some(title));
-        title_label.set_halign(gtk::Align::Start);
-        title_label.set_markup(&format!("<b>{}</b>", title));
-        header_box.append(&title_label);
-
-        let desc_label = Label::new(Some(description));
-        desc_label.set_halign(gtk::Align::Start);
-        desc_label.set_opacity(0.7);
-        header_box.append(&desc_label);
-
-        container.append(&header_box);
     }
 
     fn add_section(container: &Box, title: &str, description: &str) {
