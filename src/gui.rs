@@ -1,8 +1,9 @@
 use gtk::gdk;
 use gtk::prelude::*;
+use gtk::Switch;
 use gtk::{
-    Application, ApplicationWindow, Box, Button, CheckButton, ColorButton, Entry, HeaderBar, Label,
-    Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
+    Application, ApplicationWindow, Box, Button, CheckButton, ColorButton, Entry, Frame, HeaderBar,
+    Label, Orientation, ScrolledWindow, Separator, Stack, StackSidebar, Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -110,7 +111,7 @@ pub struct ConfigWidget {
 
 impl ConfigWidget {
     fn new(category: &str) -> Self {
-        let container = Box::new(Orientation::Vertical, 10);
+        let container = Box::new(Orientation::Vertical, 0);
         container.set_margin_start(20);
         container.set_margin_end(20);
         container.set_margin_top(20);
@@ -120,243 +121,515 @@ impl ConfigWidget {
 
         match category {
             "general" => {
-                Self::add_int_option(&container, &mut options, "border_size", "Border Size");
-                Self::add_bool_option(
+                Self::add_category_header(
+                    &container,
+                    "General",
+                    "Gaps, borders, colors, cursor & layout settings.",
+                );
+
+                Self::add_section(&container, "Gaps", "Change gaps in & out, workspaces.");
+                Self::add_int_option(
                     &container,
                     &mut options,
-                    "no_border_on_floating",
-                    "No Border on Floating",
+                    "gaps_in",
+                    "Gaps In",
+                    "Gaps between windows.",
                 );
-                Self::add_int_option(&container, &mut options, "gaps_in", "Gaps In");
-                Self::add_int_option(&container, &mut options, "gaps_out", "Gaps Out");
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "gaps_out",
+                    "Gaps Out",
+                    "Gaps between windows and monitor edges.",
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "gaps_workspaces",
                     "Gaps Workspaces",
+                    "Gaps between workspaces. Stacks with gaps_out.",
                 );
-                Self::add_color_option(
+
+                Self::add_section(&container, "Borders", "Size, resize, floating...");
+                Self::add_int_option(
                     &container,
                     &mut options,
-                    "col.inactive_border",
-                    "Inactive Border Color",
+                    "border_size",
+                    "Border Size",
+                    "Size of the border around windows.",
                 );
-                Self::add_color_option(
-                    &container,
-                    &mut options,
-                    "col.active_border",
-                    "Active Border Color",
-                );
-                Self::add_color_option(
-                    &container,
-                    &mut options,
-                    "col.nogroup_border",
-                    "No Group Border Color",
-                );
-                Self::add_color_option(
-                    &container,
-                    &mut options,
-                    "col.nogroup_border_active",
-                    "No Group Border Active Color",
-                );
-                Self::add_string_option(&container, &mut options, "layout", "Layout");
                 Self::add_bool_option(
                     &container,
                     &mut options,
-                    "no_focus_fallback",
-                    "No Focus Fallback",
+                    "no_border_on_floating",
+                    "Border on Floating",
+                    "Enable borders for floating windows.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "resize_on_border",
                     "Resize on Border",
+                    "Enables resizing windows by clicking and dragging on borders and gaps.",
                 );
+                Self::add_int_option(&container, &mut options, "extend_border_grab_area", "Extend Border Grab Area", "Extends the area around the border where you can click and drag on, only used when general:resize_on_border is on.");
+                Self::add_bool_option(&container, &mut options, "hover_icon_on_border", "Hover Icon on Border", "Show a cursor icon when hovering over borders, only used when general:resize_on_border is on.");
+
+                Self::add_section(&container, "Colors", "Change borders colors.");
+                Self::add_color_option(
+                    &container,
+                    &mut options,
+                    "col.inactive_border",
+                    "Inactive Border Color",
+                    "Border color for inactive windows.",
+                );
+                Self::add_color_option(
+                    &container,
+                    &mut options,
+                    "col.active_border",
+                    "Active Border Color",
+                    "Border color for the active window.",
+                );
+                Self::add_color_option(
+                    &container,
+                    &mut options,
+                    "col.nogroup_border",
+                    "No Group Border Color",
+                    "Inactive border color for window that cannot be added to a group.",
+                );
+                Self::add_color_option(
+                    &container,
+                    &mut options,
+                    "col.nogroup_border_active",
+                    "No Group Border Active Color",
+                    "Active border color for window that cannot be added to a group.",
+                );
+            }
+            "decoration" => {
                 Self::add_int_option(
                     &container,
                     &mut options,
-                    "extend_border_grab_area",
-                    "Extend Border Grab Area",
+                    "rounding",
+                    "Rounding",
+                    "The rounding of the window corners.",
                 );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "hover_icon_on_border",
-                    "Hover Icon on Border",
-                );
-                Self::add_bool_option(&container, &mut options, "allow_tearing", "Allow Tearing");
-                Self::add_int_option(&container, &mut options, "resize_corner", "Resize Corner");
-            }
-            "decoration" => {
-                Self::add_int_option(&container, &mut options, "rounding", "Rounding");
                 Self::add_float_option(
                     &container,
                     &mut options,
                     "active_opacity",
                     "Active Opacity",
+                    "The opacity of active windows.",
                 );
                 Self::add_float_option(
                     &container,
                     &mut options,
                     "inactive_opacity",
                     "Inactive Opacity",
+                    "The opacity of inactive windows.",
                 );
                 Self::add_float_option(
                     &container,
                     &mut options,
                     "fullscreen_opacity",
                     "Fullscreen Opacity",
+                    "The opacity of fullscreen windows.",
                 );
-                Self::add_bool_option(&container, &mut options, "drop_shadow", "Drop Shadow");
-                Self::add_int_option(&container, &mut options, "shadow_range", "Shadow Range");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "drop_shadow",
+                    "Drop Shadow",
+                    "Enables the drop shadow.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "shadow_range",
+                    "Shadow Range",
+                    "The range of the drop shadow.",
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "shadow_render_power",
                     "Shadow Render Power",
+                    "The render power of the drop shadow.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "shadow_ignore_window",
                     "Shadow Ignore Window",
+                    "Ignores the window when rendering the drop shadow.",
                 );
-                Self::add_color_option(&container, &mut options, "col.shadow", "Shadow Color");
+                Self::add_color_option(
+                    &container,
+                    &mut options,
+                    "col.shadow",
+                    "Shadow Color",
+                    "The color of the drop shadow.",
+                );
                 Self::add_color_option(
                     &container,
                     &mut options,
                     "col.shadow_inactive",
                     "Inactive Shadow Color",
+                    "The color of the drop shadow for inactive windows.",
                 );
-                Self::add_string_option(&container, &mut options, "shadow_offset", "Shadow Offset");
-                Self::add_float_option(&container, &mut options, "shadow_scale", "Shadow Scale");
-                Self::add_bool_option(&container, &mut options, "dim_inactive", "Dim Inactive");
-                Self::add_float_option(&container, &mut options, "dim_strength", "Dim Strength");
-                Self::add_float_option(&container, &mut options, "dim_special", "Dim Special");
-                Self::add_float_option(&container, &mut options, "dim_around", "Dim Around");
-                Self::add_string_option(&container, &mut options, "screen_shader", "Screen Shader");
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "shadow_offset",
+                    "Shadow Offset",
+                    "The offset of the drop shadow.",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "shadow_scale",
+                    "Shadow Scale",
+                    "The scale of the drop shadow.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "dim_inactive",
+                    "Dim Inactive",
+                    "Dims inactive windows.",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "dim_strength",
+                    "Dim Strength",
+                    "The strength of the dim effect.",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "dim_special",
+                    "Dim Special",
+                    "The dim effect for special windows.",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "dim_around",
+                    "Dim Around",
+                    "The dim effect around the windows.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "screen_shader",
+                    "Screen Shader",
+                    "The screen shader.",
+                );
 
-                Self::add_bool_option(&container, &mut options, "blur:enabled", "Blur Enabled");
-                Self::add_int_option(&container, &mut options, "blur:size", "Blur Size");
-                Self::add_int_option(&container, &mut options, "blur:passes", "Blur Passes");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "blur:enabled",
+                    "Blur Enabled",
+                    "Enables the blur effect.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "blur:size",
+                    "Blur Size",
+                    "The size of the blur effect.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "blur:passes",
+                    "Blur Passes",
+                    "The number of blur passes.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "blur:ignore_opacity",
                     "Blur Ignore Opacity",
+                    "Ignores the opacity when applying the blur effect.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "blur:new_optimizations",
                     "Blur New Optimizations",
+                    "Enables the new optimizations for the blur effect.",
                 );
-                Self::add_bool_option(&container, &mut options, "blur:xray", "Blur XRay");
-                Self::add_float_option(&container, &mut options, "blur:noise", "Blur Noise");
-                Self::add_float_option(&container, &mut options, "blur:contrast", "Blur Contrast");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "blur:xray",
+                    "Blur XRay",
+                    "Enables the XRay effect for the blur.",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "blur:noise",
+                    "Blur Noise",
+                    "The noise level for the blur effect.",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "blur:contrast",
+                    "Blur Contrast",
+                    "The contrast level for the blur effect.",
+                );
                 Self::add_float_option(
                     &container,
                     &mut options,
                     "blur:brightness",
                     "Blur Brightness",
+                    "The brightness level for the blur effect.",
                 );
-                Self::add_float_option(&container, &mut options, "blur:vibrancy", "Blur Vibrancy");
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "blur:vibrancy",
+                    "Blur Vibrancy",
+                    "The vibrancy level for the blur effect.",
+                );
                 Self::add_float_option(
                     &container,
                     &mut options,
                     "blur:vibrancy_darkness",
                     "Blur Vibrancy Darkness",
+                    "The darkness level for the vibrancy effect.",
                 );
-                Self::add_bool_option(&container, &mut options, "blur:special", "Blur Special");
-                Self::add_bool_option(&container, &mut options, "blur:popups", "Blur Popups");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "blur:special",
+                    "Blur Special",
+                    "Enables the blur effect for special windows.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "blur:popups",
+                    "Blur Popups",
+                    "Enables the blur effect for popups.",
+                );
                 Self::add_float_option(
                     &container,
                     &mut options,
                     "blur:popups_ignorealpha",
                     "Blur Popups Ignore Alpha",
+                    "Ignores the alpha channel when applying the blur effect for popups.",
                 );
             }
             "animations" => {
-                Self::add_bool_option(&container, &mut options, "enabled", "Enable Animations");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "enabled",
+                    "Enable Animations",
+                    "Enables animations.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "first_launch_animation",
                     "First Launch Animation",
+                    "Enables the first launch animation.",
                 );
             }
             "input" => {
-                Self::add_string_option(&container, &mut options, "kb_model", "Keyboard Model");
-                Self::add_string_option(&container, &mut options, "kb_layout", "Keyboard Layout");
-                Self::add_string_option(&container, &mut options, "kb_variant", "Keyboard Variant");
-                Self::add_string_option(&container, &mut options, "kb_options", "Keyboard Options");
-                Self::add_string_option(&container, &mut options, "kb_rules", "Keyboard Rules");
-                Self::add_string_option(&container, &mut options, "kb_file", "Keyboard File");
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "kb_model",
+                    "Keyboard Model",
+                    "The keyboard model.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "kb_layout",
+                    "Keyboard Layout",
+                    "The keyboard layout.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "kb_variant",
+                    "Keyboard Variant",
+                    "The keyboard variant.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "kb_options",
+                    "Keyboard Options",
+                    "The keyboard options.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "kb_rules",
+                    "Keyboard Rules",
+                    "The keyboard rules.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "kb_file",
+                    "Keyboard File",
+                    "The keyboard file.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "numlock_by_default",
                     "Numlock by Default",
+                    "Enables numlock by default.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "resolve_binds_by_sym",
                     "Resolve Binds by Symbol",
+                    "Resolves binds by symbol.",
                 );
-                Self::add_int_option(&container, &mut options, "repeat_rate", "Repeat Rate");
-                Self::add_int_option(&container, &mut options, "repeat_delay", "Repeat Delay");
-                Self::add_float_option(&container, &mut options, "sensitivity", "Sensitivity");
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "repeat_rate",
+                    "Repeat Rate",
+                    "The repeat rate.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "repeat_delay",
+                    "Repeat Delay",
+                    "The repeat delay.",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "sensitivity",
+                    "Sensitivity",
+                    "The sensitivity.",
+                );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "accel_profile",
                     "Acceleration Profile",
+                    "The acceleration profile.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "force_no_accel",
                     "Force No Acceleration",
+                    "Forces no acceleration.",
                 );
-                Self::add_bool_option(&container, &mut options, "left_handed", "Left Handed");
-                Self::add_string_option(&container, &mut options, "scroll_points", "Scroll Points");
-                Self::add_string_option(&container, &mut options, "scroll_method", "Scroll Method");
-                Self::add_int_option(&container, &mut options, "scroll_button", "Scroll Button");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "left_handed",
+                    "Left Handed",
+                    "Enables left handed mode.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "scroll_points",
+                    "Scroll Points",
+                    "The scroll points.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "scroll_method",
+                    "Scroll Method",
+                    "The scroll method.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "scroll_button",
+                    "Scroll Button",
+                    "The scroll button.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "scroll_button_lock",
                     "Scroll Button Lock",
+                    "Locks the scroll button.",
                 );
-                Self::add_float_option(&container, &mut options, "scroll_factor", "Scroll Factor");
-                Self::add_bool_option(&container, &mut options, "natural_scroll", "Natural Scroll");
-                Self::add_int_option(&container, &mut options, "follow_mouse", "Follow Mouse");
-                Self::add_int_option(&container, &mut options, "focus_on_close", "Focus on Close");
-                Self::add_bool_option(&container, &mut options, "mouse_refocus", "Mouse Refocus");
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "scroll_factor",
+                    "Scroll Factor",
+                    "The scroll factor.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "natural_scroll",
+                    "Natural Scroll",
+                    "Enables natural scroll.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "follow_mouse",
+                    "Follow Mouse",
+                    "Follows the mouse.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "focus_on_close",
+                    "Focus on Close",
+                    "Focuses on close.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "mouse_refocus",
+                    "Mouse Refocus",
+                    "Refocuses on mouse.",
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "float_switch_override_focus",
                     "Float Switch Override Focus",
+                    "Overrides focus when switching to float.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "special_fallthrough",
                     "Special Fallthrough",
+                    "Enables special fallthrough.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "off_window_axis_events",
                     "Off Window Axis Events",
+                    "Enables off window axis events.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "emulate_discrete_scroll",
                     "Emulate Discrete Scroll",
+                    "Emulates discrete scroll.",
                 );
 
                 Self::add_bool_option(
@@ -364,49 +637,63 @@ impl ConfigWidget {
                     &mut options,
                     "touchpad:disable_while_typing",
                     "Disable While Typing",
+                    "Disables the touchpad while typing.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "touchpad:natural_scroll",
                     "Natural Scroll",
+                    "Enables natural scroll.",
                 );
                 Self::add_float_option(
                     &container,
                     &mut options,
                     "touchpad:scroll_factor",
                     "Scroll Factor",
+                    "The scroll factor.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "touchpad:middle_button_emulation",
                     "Middle Button Emulation",
+                    "Emulates the middle button.",
                 );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "touchpad:tap_button_map",
                     "Tap Button Map",
+                    "The tap button map.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "touchpad:clickfinger_behavior",
                     "Clickfinger Behavior",
+                    "The clickfinger behavior.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "touchpad:tap-to-click",
                     "Tap to Click",
+                    "Enables tap to click.",
                 );
-                Self::add_bool_option(&container, &mut options, "touchpad:drag_lock", "Drag Lock");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "touchpad:drag_lock",
+                    "Drag Lock",
+                    "Enables drag lock.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "touchpad:tap-and-drag",
                     "Tap and Drag",
+                    "Enables tap and drag.",
                 );
 
                 Self::add_int_option(
@@ -414,47 +701,78 @@ impl ConfigWidget {
                     &mut options,
                     "touchdevice:transform",
                     "Transform",
+                    "The transform.",
                 );
-                Self::add_string_option(&container, &mut options, "touchdevice:output", "Output");
-                Self::add_bool_option(&container, &mut options, "touchdevice:enabled", "Enabled");
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "touchdevice:output",
+                    "Output",
+                    "The output.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "touchdevice:enabled",
+                    "Enabled",
+                    "Enables the touchdevice.",
+                );
 
-                Self::add_int_option(&container, &mut options, "tablet:transform", "Transform");
-                Self::add_string_option(&container, &mut options, "tablet:output", "Output");
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "tablet:transform",
+                    "Transform",
+                    "The transform.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "tablet:output",
+                    "Output",
+                    "The output.",
+                );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "tablet:region_position",
                     "Region Position",
+                    "The region position.",
                 );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "tablet:region_size",
                     "Region Size",
+                    "The region size.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "tablet:relative_input",
                     "Relative Input",
+                    "Enables relative input.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "tablet:left_handed",
                     "Left Handed",
+                    "Enables left handed mode.",
                 );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "tablet:active_area_size",
                     "Active Area Size",
+                    "The active area size.",
                 );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "tablet:active_area_position",
                     "Active Area Position",
+                    "The active area position.",
                 );
             }
             "gestures" => {
@@ -463,573 +781,699 @@ impl ConfigWidget {
                     &mut options,
                     "workspace_swipe",
                     "Workspace Swipe",
+                    "Enables workspace swipe.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "workspace_swipe_fingers",
                     "Workspace Swipe Fingers",
+                    "The number of fingers for workspace swipe.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "workspace_swipe_min_fingers",
                     "Workspace Swipe Min Fingers",
+                    "The minimum number of fingers for workspace swipe.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "workspace_swipe_distance",
                     "Workspace Swipe Distance",
+                    "The distance for workspace swipe.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "workspace_swipe_touch",
                     "Workspace Swipe Touch",
+                    "Enables workspace swipe touch.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "workspace_swipe_invert",
                     "Workspace Swipe Invert",
+                    "Inverts workspace swipe.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "workspace_swipe_touch_invert",
                     "Workspace Swipe Touch Invert",
+                    "Inverts workspace swipe touch.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "workspace_swipe_min_speed_to_force",
                     "Workspace Swipe Min Speed to Force",
+                    "The minimum speed to force workspace swipe.",
                 );
                 Self::add_float_option(
                     &container,
                     &mut options,
                     "workspace_swipe_cancel_ratio",
                     "Workspace Swipe Cancel Ratio",
+                    "The cancel ratio for workspace swipe.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "workspace_swipe_create_new",
                     "Workspace Swipe Create New",
+                    "Creates a new workspace on swipe.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "workspace_swipe_direction_lock",
                     "Workspace Swipe Direction Lock",
+                    "Locks the direction for workspace swipe.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "workspace_swipe_direction_lock_threshold",
                     "Workspace Swipe Direction Lock Threshold",
+                    "The threshold for workspace swipe direction lock.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "workspace_swipe_forever",
                     "Workspace Swipe Forever",
+                    "Enables workspace swipe forever.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "workspace_swipe_use_r",
                     "Workspace Swipe Use R",
+                    "Uses R for workspace swipe.",
                 );
             }
             "Group" => {
-                Self::add_bool_option(&container, &mut options, "auto_group", "Auto Group");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "auto_group",
+                    "Auto Group",
+                    "Enables auto group.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "insert_after_current",
                     "Insert After Current",
+                    "Inserts after current.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "focus_removed_window",
                     "Focus Removed Window",
+                    "Focuses the removed window.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "drag_into_group",
                     "Drag Into Group",
+                    "Drags into group.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "merge_groups_on_drag",
                     "Merge Groups on Drag",
+                    "Merges groups on drag.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "merge_floated_into_tiled_on_groupbar",
                     "Merge Floated Into Tiled on Groupbar",
+                    "Merges floated into tiled on groupbar.",
                 );
                 Self::add_color_option(
                     &container,
                     &mut options,
                     "col.border_active",
                     "Active Border Color",
+                    "The color of the active border.",
                 );
                 Self::add_color_option(
                     &container,
                     &mut options,
                     "col.border_inactive",
                     "Inactive Border Color",
+                    "The color of the inactive border.",
                 );
                 Self::add_color_option(
                     &container,
                     &mut options,
                     "col.border_locked_active",
                     "Locked Active Border Color",
+                    "The color of the locked active border.",
                 );
                 Self::add_color_option(
                     &container,
                     &mut options,
                     "col.border_locked_inactive",
                     "Locked Inactive Border Color",
+                    "The color of the locked inactive border.",
                 );
 
-                Self::add_bool_option(&container, &mut options, "groupbar:enabled", "Enabled");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "groupbar:enabled",
+                    "Enabled",
+                    "Enables the groupbar.",
+                );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "groupbar:font_family",
                     "Font Family",
+                    "The font family.",
                 );
-                Self::add_int_option(&container, &mut options, "groupbar:font_size", "Font Size");
-                Self::add_bool_option(&container, &mut options, "groupbar:gradients", "Gradients");
-                Self::add_int_option(&container, &mut options, "groupbar:height", "Height");
-                Self::add_bool_option(&container, &mut options, "groupbar:stacked", "Stacked");
-                Self::add_int_option(&container, &mut options, "groupbar:priority", "Priority");
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "groupbar:font_size",
+                    "Font Size",
+                    "The font size.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "groupbar:gradients",
+                    "Gradients",
+                    "Enables gradients.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "groupbar:height",
+                    "Height",
+                    "The height.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "groupbar:stacked",
+                    "Stacked",
+                    "Enables stacked.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "groupbar:priority",
+                    "Priority",
+                    "The priority.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "groupbar:render_titles",
                     "Render Titles",
+                    "Enables render titles.",
                 );
-                Self::add_bool_option(&container, &mut options, "groupbar:scrolling", "Scrolling");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "groupbar:scrolling",
+                    "Scrolling",
+                    "Enables scrolling.",
+                );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "groupbar:text_color",
                     "Text Color",
+                    "The text color.",
                 );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "groupbar:col.active",
                     "Active Color",
+                    "The active color.",
                 );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "groupbar:col.inactive",
                     "Inactive Color",
+                    "The inactive color.",
                 );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "groupbar:col.locked_active",
                     "Locked Active Color",
+                    "The locked active color.",
                 );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "groupbar:col.locked_inactive",
                     "Locked Inactive Color",
+                    "The locked inactive color.",
                 );
             }
             "misc" => {
+                Self::add_section(
+                    &container,
+                    "Miscellaneous Settings",
+                    "Various other configuration options.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "disable_hyprland_logo",
                     "Disable Hyprland Logo",
+                    "Disables the random Hyprland logo / anime girl background.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "disable_splash_rendering",
                     "Disable Splash Rendering",
+                    "Disables the Hyprland splash rendering.",
                 );
-                Self::add_color_option(&container, &mut options, "col.splash", "Splash Color");
-                Self::add_string_option(&container, &mut options, "font_family", "Font Family");
+                Self::add_color_option(
+                    &container,
+                    &mut options,
+                    "col.splash",
+                    "Splash Color",
+                    "Changes the color of the splash text.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "font_family",
+                    "Font Family",
+                    "Set the global default font to render the text.",
+                );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "splash_font_family",
                     "Splash Font Family",
+                    "Changes the font used to render the splash text.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "force_default_wallpaper",
                     "Force Default Wallpaper",
+                    "Enforce any of the 3 default wallpapers.",
                 );
-                Self::add_bool_option(&container, &mut options, "vfr", "VFR");
-                Self::add_int_option(&container, &mut options, "vrr", "VRR");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "vfr",
+                    "VFR",
+                    "Controls the VFR status of Hyprland.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "vrr",
+                    "VRR",
+                    "Controls the VRR (Adaptive Sync) of your monitors.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "mouse_move_enables_dpms",
                     "Mouse Move Enables DPMS",
+                    "If DPMS is set to off, wake up the monitors if the mouse moves.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "key_press_enables_dpms",
                     "Key Press Enables DPMS",
+                    "If DPMS is set to off, wake up the monitors if a key is pressed.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "always_follow_on_dnd",
                     "Always Follow on DND",
+                    "Will make mouse focus follow the mouse when drag and dropping.",
                 );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "layers_hog_keyboard_focus",
-                    "Layers Hog Keyboard Focus",
-                );
+                Self::add_bool_option(&container, &mut options, "layers_hog_keyboard_focus", "Layers Hog Keyboard Focus", "If true, will make keyboard-interactive layers keep their focus on mouse move.");
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "animate_manual_resizes",
                     "Animate Manual Resizes",
+                    "If true, will animate manual window resizes/moves.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "animate_mouse_windowdragging",
                     "Animate Mouse Window Dragging",
+                    "If true, will animate windows being dragged by mouse.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "disable_autoreload",
                     "Disable Autoreload",
+                    "If true, the config will not reload automatically on save.",
                 );
-                Self::add_bool_option(&container, &mut options, "enable_swallow", "Enable Swallow");
-                Self::add_string_option(&container, &mut options, "swallow_regex", "Swallow Regex");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "enable_swallow",
+                    "Enable Swallow",
+                    "Enable window swallowing.",
+                );
+                Self::add_string_option(
+                    &container,
+                    &mut options,
+                    "swallow_regex",
+                    "Swallow Regex",
+                    "The class regex to be used for windows that should be swallowed.",
+                );
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "swallow_exception_regex",
                     "Swallow Exception Regex",
+                    "The title regex to be used for windows that should not be swallowed.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "focus_on_activate",
                     "Focus on Activate",
+                    "Whether Hyprland should focus an app that requests to be focused.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "no_direct_scanout",
+                    "No Direct Scanout",
+                    "Disables direct scanout.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "mouse_move_focuses_monitor",
                     "Mouse Move Focuses Monitor",
+                    "Whether mouse moving into a different monitor should focus it.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
-                    "render_ahead_of_time",
-                    "Render Ahead of Time",
+                    "suppress_portal_warnings",
+                    "Suppress Portal Warnings",
+                    "Disables warnings about incompatible portal implementations.",
                 );
+                Self::add_bool_option(&container, &mut options, "render_ahead_of_time", "Render Ahead of Time", "Starts rendering before your monitor displays a frame in order to lower latency.");
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "render_ahead_safezone",
                     "Render Ahead Safezone",
+                    "How many ms of safezone to add to rendering ahead of time.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "cursor_zoom_factor",
+                    "Cursor Zoom Factor",
+                    "The factor to zoom by around the cursor. Like a magnifying glass.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "cursor_zoom_rigid",
+                    "Cursor Zoom Rigid",
+                    "Whether the zoom should follow the cursor rigidly or loosely.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "allow_session_lock_restore",
                     "Allow Session Lock Restore",
+                    "If true, will allow you to restart a lockscreen app in case it crashes.",
                 );
                 Self::add_color_option(
                     &container,
                     &mut options,
                     "background_color",
                     "Background Color",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "close_special_on_empty",
-                    "Close Special on Empty",
-                );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "new_window_takes_over_fullscreen",
-                    "New Window Takes Over Fullscreen",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "exit_window_retains_fullscreen",
-                    "Exit Window Retains Fullscreen",
-                );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "initial_workspace_tracking",
-                    "Initial Workspace Tracking",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "middle_click_paste",
-                    "Middle Click Paste",
-                );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "render_unfocused_fps",
-                    "Render Unfocused FPS",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "disable_xdg_env_checks",
-                    "Disable XDG Env Checks",
+                    "Change the background color.",
                 );
             }
             "binds" => {
-                Self::add_bool_option(
+                Self::add_section(
                     &container,
-                    &mut options,
-                    "pass_mouse_when_bound",
-                    "Pass Mouse When Bound",
+                    "Bind Settings",
+                    "Configure keybinding behavior.",
                 );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "scroll_event_delay",
-                    "Scroll Event Delay",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "workspace_back_and_forth",
-                    "Workspace Back and Forth",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "allow_workspace_cycles",
-                    "Allow Workspace Cycles",
-                );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "workspace_center_on",
-                    "Workspace Center On",
-                );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "focus_preferred_method",
-                    "Focus Preferred Method",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "ignore_group_lock",
-                    "Ignore Group Lock",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "movefocus_cycles_fullscreen",
-                    "Movefocus Cycles Fullscreen",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "disable_keybind_grabbing",
-                    "Disable Keybind Grabbing",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "window_direction_monitor_fallback",
-                    "Window Direction Monitor Fallback",
-                );
+                Self::add_bool_option(&container, &mut options, "pass_mouse_when_bound", "Pass Mouse When Bound", "If disabled, will not pass the mouse events to apps / dragging windows around if a keybind has been triggered.");
+                Self::add_int_option(&container, &mut options, "scroll_event_delay", "Scroll Event Delay", "In ms, how many ms to wait after a scroll event to allow passing another one for the binds.");
+                Self::add_bool_option(&container, &mut options, "workspace_back_and_forth", "Workspace Back and Forth", "If enabled, an attempt to switch to the currently focused workspace will instead switch to the previous workspace.");
+                Self::add_bool_option(&container, &mut options, "allow_workspace_cycles", "Allow Workspace Cycles", "If enabled, workspaces don't forget their previous workspace, so cycles can be created.");
+                Self::add_int_option(&container, &mut options, "workspace_center_on", "Workspace Center On", "Whether switching workspaces should center the cursor on the workspace (0) or on the last active window for that workspace (1).");
+                Self::add_int_option(&container, &mut options, "focus_preferred_method", "Focus Preferred Method", "Sets the preferred focus finding method when using focuswindow/movewindow/etc with a direction.");
+                Self::add_bool_option(&container, &mut options, "ignore_group_lock", "Ignore Group Lock", "If enabled, dispatchers like moveintogroup, moveoutofgroup and movewindoworgroup will ignore lock per group.");
+                Self::add_bool_option(&container, &mut options, "movefocus_cycles_fullscreen", "Movefocus Cycles Fullscreen", "If enabled, when on a fullscreen window, movefocus will cycle fullscreen, if not, it will move the focus in a direction.");
+                Self::add_bool_option(&container, &mut options, "disable_keybind_grabbing", "Disable Keybind Grabbing", "If enabled, apps that request keybinds to be disabled (e.g. VMs) will not be able to do so.");
+                Self::add_bool_option(&container, &mut options, "window_direction_monitor_fallback", "Window Direction Monitor Fallback", "If enabled, moving a window or focus over the edge of a monitor with a direction will move it to the next monitor in that direction.");
             }
-            "XWayland" => {
-                Self::add_bool_option(&container, &mut options, "enabled", "Enabled");
+            "xwayland" => {
+                Self::add_section(
+                    &container,
+                    "XWayland Settings",
+                    "Configure XWayland behavior.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
-                    "use_nearest_neighbor",
-                    "Use Nearest Neighbor",
+                    "enabled",
+                    "Enabled",
+                    "Allow running applications using X11.",
                 );
+                Self::add_bool_option(&container, &mut options, "use_nearest_neighbor", "Use Nearest Neighbor", "Uses the nearest neighbor filtering for xwayland apps, making them pixelated rather than blurry.");
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "force_zero_scaling",
                     "Force Zero Scaling",
+                    "Forces a scale of 1 on xwayland windows on scaled displays.",
                 );
             }
-            "OpenGL" => {
-                Self::add_bool_option(
+            "opengl" => {
+                Self::add_section(&container, "OpenGL Settings", "Configure OpenGL behavior.");
+                Self::add_bool_option(&container, &mut options, "nvidia_anti_flicker", "Nvidia Anti Flicker", "Reduces flickering on nvidia at the cost of possible frame drops on lower-end GPUs.");
+                Self::add_int_option(&container, &mut options, "force_introspection", "Force Introspection", "Forces introspection at all times. Introspection is aimed at reducing GPU usage in certain cases, but might cause graphical glitches on nvidia.");
+            }
+            "render" => {
+                Self::add_section(
                     &container,
-                    &mut options,
-                    "nvidia_anti_flicker",
-                    "Nvidia Anti Flicker",
+                    "Render Settings",
+                    "Configure rendering behavior.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
-                    "force_introspection",
-                    "Force Introspection",
+                    "explicit_sync",
+                    "Explicit Sync",
+                    "Whether to enable explicit sync support.",
                 );
-            }
-            "Render" => {
-                Self::add_int_option(&container, &mut options, "explicit_sync", "Explicit Sync");
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "explicit_sync_kms",
                     "Explicit Sync KMS",
+                    "Whether to enable explicit sync support for the KMS layer.",
                 );
-                Self::add_bool_option(&container, &mut options, "direct_scanout", "Direct Scanout");
+                Self::add_bool_option(&container, &mut options, "direct_scanout", "Direct Scanout", "Enables direct scanout. Direct scanout attempts to reduce lag when there is only one fullscreen application on a screen.");
             }
-            "Cursor" => {
+            "cursor" => {
+                Self::add_section(&container, "Cursor Settings", "Configure cursor behavior.");
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "sync_gsettings_theme",
                     "Sync GSettings Theme",
+                    "Sync xcursor theme with gsettings.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "no_hardware_cursors",
                     "No Hardware Cursors",
+                    "Disables hardware cursors.",
                 );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "no_break_fs_vrr",
-                    "No Break FS VRR",
-                );
+                Self::add_bool_option(&container, &mut options, "no_break_fs_vrr", "No Break FS VRR", "Disables scheduling new frames on cursor movement for fullscreen apps with VRR enabled to avoid framerate spikes.");
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "min_refresh_rate",
                     "Min Refresh Rate",
+                    "Minimum refresh rate for cursor movement when no_break_fs_vrr is active.",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "hotspot_padding",
                     "Hotspot Padding",
+                    "The padding, in logical px, between screen edges and the cursor.",
                 );
                 Self::add_float_option(
                     &container,
                     &mut options,
                     "inactive_timeout",
                     "Inactive Timeout",
-                );
-                Self::add_bool_option(&container, &mut options, "no_warps", "No Warps");
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "persistent_warps",
-                    "Persistent Warps",
+                    "In seconds, after how many seconds of cursor's inactivity to hide it.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
-                    "warp_on_change_workspace",
-                    "Warp on Change Workspace",
+                    "no_warps",
+                    "No Warps",
+                    "If true, will not warp the cursor in many cases.",
                 );
+                Self::add_bool_option(&container, &mut options, "persistent_warps", "Persistent Warps", "When a window is refocused, the cursor returns to its last position relative to that window.");
+                Self::add_bool_option(&container, &mut options, "warp_on_change_workspace", "Warp on Change Workspace", "If true, move the cursor to the last focused window after changing the workspace.");
                 Self::add_string_option(
                     &container,
                     &mut options,
                     "default_monitor",
                     "Default Monitor",
+                    "The name of a default monitor for the cursor to be set to on startup.",
                 );
-                Self::add_float_option(&container, &mut options, "zoom_factor", "Zoom Factor");
-                Self::add_bool_option(&container, &mut options, "zoom_rigid", "Zoom Rigid");
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "zoom_factor",
+                    "Zoom Factor",
+                    "The factor to zoom by around the cursor. Like a magnifying glass.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "zoom_rigid",
+                    "Zoom Rigid",
+                    "Whether the zoom should follow the cursor rigidly or loosely.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "enable_hyprcursor",
                     "Enable Hyprcursor",
+                    "Whether to enable hyprcursor support.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "hide_on_key_press",
                     "Hide on Key Press",
+                    "Hides the cursor when you press any key until the mouse is moved.",
                 );
-                Self::add_bool_option(&container, &mut options, "hide_on_touch", "Hide on Touch");
+                Self::add_bool_option(&container, &mut options, "hide_on_touch", "Hide on Touch", "Hides the cursor when the last input was a touch input until a mouse input is done.");
+                Self::add_bool_option(&container, &mut options, "allow_dumb_copy", "Allow Dumb Copy", "Makes HW cursors work on Nvidia, at the cost of a possible hitch whenever the image changes.");
+            }
+            "debug" => {
+                Self::add_section(&container, "Debug Settings", "Configure debug options.");
                 Self::add_bool_option(
                     &container,
                     &mut options,
-                    "allow_dumb_copy",
-                    "Allow Dumb Copy",
+                    "overlay",
+                    "Overlay",
+                    "Print the debug performance overlay.",
                 );
-            }
-            "Debug" => {
-                Self::add_bool_option(&container, &mut options, "overlay", "Overlay");
-                Self::add_bool_option(&container, &mut options, "damage_blink", "Damage Blink");
-                Self::add_bool_option(&container, &mut options, "disable_logs", "Disable Logs");
-                Self::add_bool_option(&container, &mut options, "disable_time", "Disable Time");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "damage_blink",
+                    "Damage Blink",
+                    "Flash areas updated with damage tracking.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "disable_logs",
+                    "Disable Logs",
+                    "Disable logging to a file.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "disable_time",
+                    "Disable Time",
+                    "Disables time logging.",
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "damage_tracking",
                     "Damage Tracking",
+                    "Redraw only the needed bits of the display.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "enable_stdout_logs",
                     "Enable Stdout Logs",
+                    "Enables logging to stdout.",
                 );
-                Self::add_int_option(&container, &mut options, "manual_crash", "Manual Crash");
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "manual_crash",
+                    "Manual Crash",
+                    "Set to 1 and then back to 0 to crash Hyprland.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "suppress_errors",
                     "Suppress Errors",
+                    "If true, do not display config file parsing errors.",
                 );
-                Self::add_int_option(
-                    &container,
-                    &mut options,
-                    "watchdog_timeout",
-                    "Watchdog Timeout",
-                );
+                Self::add_int_option(&container, &mut options, "watchdog_timeout", "Watchdog Timeout", "Sets the timeout in seconds for watchdog to abort processing of a signal of the main thread.");
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "disable_scale_checks",
                     "Disable Scale Checks",
+                    "Disables verification of the scale factors.",
                 );
-                Self::add_int_option(&container, &mut options, "error_limit", "Error Limit");
-                Self::add_int_option(&container, &mut options, "error_position", "Error Position");
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "error_limit",
+                    "Error Limit",
+                    "Limits the number of displayed config file parsing errors.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "error_position",
+                    "Error Position",
+                    "Sets the position of the error bar. top - 0, bottom - 1",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "colored_stdout_logs",
                     "Colored Stdout Logs",
+                    "Enables colors in the stdout logs.",
                 );
             }
             _ => {}
@@ -1038,18 +1482,85 @@ impl ConfigWidget {
         ConfigWidget { container, options }
     }
 
+    fn add_category_header(container: &Box, title: &str, description: &str) {
+        let header_box = Box::new(Orientation::Vertical, 5);
+        header_box.set_margin_bottom(20);
+
+        let title_label = Label::new(Some(title));
+        title_label.set_halign(gtk::Align::Start);
+        title_label.set_markup(&format!("<b>{}</b>", title));
+        header_box.append(&title_label);
+
+        let desc_label = Label::new(Some(description));
+        desc_label.set_halign(gtk::Align::Start);
+        desc_label.set_opacity(0.7);
+        header_box.append(&desc_label);
+
+        container.append(&header_box);
+    }
+
+    fn add_section(container: &Box, title: &str, description: &str) {
+        let section_box = Box::new(Orientation::Vertical, 5);
+        section_box.set_margin_top(15);
+        section_box.set_margin_bottom(10);
+
+        let title_label = Label::new(Some(title));
+        title_label.set_halign(gtk::Align::Start);
+        title_label.set_markup(&format!("<b>{}</b>", title));
+        section_box.append(&title_label);
+
+        let desc_label = Label::new(Some(description));
+        desc_label.set_halign(gtk::Align::Start);
+        desc_label.set_opacity(0.7);
+        section_box.append(&desc_label);
+
+        let frame = Frame::new(None);
+        frame.set_margin_top(10);
+        section_box.append(&frame);
+
+        container.append(&section_box);
+    }
+
     fn add_int_option(
         container: &Box,
         options: &mut HashMap<String, Widget>,
         name: &str,
         label: &str,
+        description: &str,
     ) {
-        let hbox = Box::new(Orientation::Horizontal, 5);
-        let label = Label::new(Some(label));
-        let entry = Entry::new();
+        let hbox = Box::new(Orientation::Horizontal, 10);
+        hbox.set_margin_start(10);
+        hbox.set_margin_end(10);
+        hbox.set_margin_top(5);
+        hbox.set_margin_bottom(5);
 
-        hbox.append(&label);
+        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_widget = Label::new(Some(label));
+        label_widget.set_halign(gtk::Align::Start);
+        vbox.append(&label_widget);
+
+        let desc_label = Label::new(Some(description));
+        desc_label.set_halign(gtk::Align::Start);
+        desc_label.set_opacity(0.7);
+        vbox.append(&desc_label);
+
+        let entry = Entry::new();
+        entry.set_width_request(50);
+        entry.set_halign(gtk::Align::End);
+
+        let button_box = Box::new(Orientation::Horizontal, 0);
+        button_box.set_halign(gtk::Align::End);
+        let minus_button = Button::with_label("-");
+        minus_button.add_css_class("circular");
+        let plus_button = Button::with_label("+");
+        plus_button.add_css_class("circular");
+        button_box.append(&minus_button);
+        button_box.append(&plus_button);
+
+        hbox.append(&vbox);
         hbox.append(&entry);
+        hbox.append(&button_box);
+
         container.append(&hbox);
 
         options.insert(name.to_string(), entry.upcast());
@@ -1060,10 +1571,64 @@ impl ConfigWidget {
         options: &mut HashMap<String, Widget>,
         name: &str,
         label: &str,
+        description: &str,
     ) {
-        let checkbox = CheckButton::with_label(label);
-        container.append(&checkbox);
-        options.insert(name.to_string(), checkbox.upcast());
+        let hbox = Box::new(Orientation::Horizontal, 10);
+        hbox.set_margin_start(10);
+        hbox.set_margin_end(10);
+        hbox.set_margin_top(5);
+        hbox.set_margin_bottom(5);
+
+        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_widget = Label::new(Some(label));
+        label_widget.set_halign(gtk::Align::Start);
+        vbox.append(&label_widget);
+
+        let desc_label = Label::new(Some(description));
+        desc_label.set_halign(gtk::Align::Start);
+        desc_label.set_opacity(0.7);
+        vbox.append(&desc_label);
+
+        let switch = Switch::new();
+        switch.set_halign(gtk::Align::End);
+
+        hbox.append(&vbox);
+        hbox.append(&switch);
+
+        container.append(&hbox);
+
+        options.insert(name.to_string(), switch.upcast());
+    }
+
+    fn add_float_option(
+        container: &Box,
+        options: &mut HashMap<String, Widget>,
+        name: &str,
+        label: &str,
+        description: &str,
+    ) {
+        let hbox = Box::new(Orientation::Horizontal, 10);
+        hbox.set_halign(gtk::Align::Center);
+
+        let vbox = Box::new(Orientation::Vertical, 5);
+        let label = Label::new(Some(label));
+        label.set_halign(gtk::Align::Start);
+        vbox.append(&label);
+
+        let desc_label = Label::new(Some(description));
+        desc_label.set_halign(gtk::Align::Start);
+        desc_label.set_opacity(0.7);
+        vbox.append(&desc_label);
+
+        let entry = Entry::new();
+        entry.set_width_request(100);
+
+        hbox.append(&vbox);
+        hbox.append(&entry);
+
+        container.append(&hbox);
+
+        options.insert(name.to_string(), entry.upcast());
     }
 
     fn add_string_option(
@@ -1071,16 +1636,102 @@ impl ConfigWidget {
         options: &mut HashMap<String, Widget>,
         name: &str,
         label: &str,
+        description: &str,
     ) {
-        let hbox = Box::new(Orientation::Horizontal, 5);
-        let label = Label::new(Some(label));
-        let entry = Entry::new();
+        let hbox = Box::new(Orientation::Horizontal, 10);
+        hbox.set_halign(gtk::Align::Center);
 
-        hbox.append(&label);
+        let vbox = Box::new(Orientation::Vertical, 5);
+        let label = Label::new(Some(label));
+        label.set_halign(gtk::Align::Start);
+        vbox.append(&label);
+
+        let desc_label = Label::new(Some(description));
+        desc_label.set_halign(gtk::Align::Start);
+        desc_label.set_opacity(0.7);
+        vbox.append(&desc_label);
+
+        let entry = Entry::new();
+        entry.set_width_request(200);
+
+        hbox.append(&vbox);
         hbox.append(&entry);
+
         container.append(&hbox);
 
         options.insert(name.to_string(), entry.upcast());
+    }
+
+    fn add_color_option(
+        container: &Box,
+        options: &mut HashMap<String, Widget>,
+        name: &str,
+        label: &str,
+        description: &str,
+    ) {
+        let hbox = Box::new(Orientation::Horizontal, 10);
+        hbox.set_margin_start(10);
+        hbox.set_margin_end(10);
+        hbox.set_margin_top(5);
+        hbox.set_margin_bottom(5);
+
+        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_widget = Label::new(Some(label));
+        label_widget.set_halign(gtk::Align::Start);
+        vbox.append(&label_widget);
+
+        let desc_label = Label::new(Some(description));
+        desc_label.set_halign(gtk::Align::Start);
+        desc_label.set_opacity(0.7);
+        vbox.append(&desc_label);
+
+        let color_button = ColorButton::new();
+        color_button.set_halign(gtk::Align::End);
+
+        hbox.append(&vbox);
+        hbox.append(&color_button);
+
+        container.append(&hbox);
+
+        options.insert(name.to_string(), color_button.upcast());
+    }
+
+    fn add_vec2_option(
+        container: &Box,
+        options: &mut HashMap<String, Widget>,
+        name: &str,
+        label: &str,
+        description: &str,
+    ) {
+        let hbox = Box::new(Orientation::Horizontal, 10);
+        hbox.set_halign(gtk::Align::Center);
+
+        let vbox = Box::new(Orientation::Vertical, 5);
+        let label = Label::new(Some(label));
+        label.set_halign(gtk::Align::Start);
+        vbox.append(&label);
+
+        let desc_label = Label::new(Some(description));
+        desc_label.set_halign(gtk::Align::Start);
+        desc_label.set_opacity(0.7);
+        vbox.append(&desc_label);
+
+        let entry_x = Entry::new();
+        entry_x.set_width_request(80);
+        let entry_y = Entry::new();
+        entry_y.set_width_request(80);
+
+        let entry_box = Box::new(Orientation::Horizontal, 5);
+        entry_box.append(&entry_x);
+        entry_box.append(&entry_y);
+
+        hbox.append(&vbox);
+        hbox.append(&entry_box);
+
+        container.append(&hbox);
+
+        options.insert(format!("{}_x", name), entry_x.upcast());
+        options.insert(format!("{}_y", name), entry_y.upcast());
     }
 
     fn load_config(
@@ -1192,39 +1843,5 @@ impl ConfigWidget {
                 }
             }
         }
-    }
-
-    fn add_float_option(
-        container: &Box,
-        options: &mut HashMap<String, Widget>,
-        name: &str,
-        label: &str,
-    ) {
-        let hbox = Box::new(Orientation::Horizontal, 5);
-        let label = Label::new(Some(label));
-        let entry = Entry::new();
-
-        hbox.append(&label);
-        hbox.append(&entry);
-        container.append(&hbox);
-
-        options.insert(name.to_string(), entry.upcast());
-    }
-
-    fn add_color_option(
-        container: &Box,
-        options: &mut HashMap<String, Widget>,
-        name: &str,
-        label: &str,
-    ) {
-        let hbox = Box::new(Orientation::Horizontal, 5);
-        let label = Label::new(Some(label));
-        let color_button = ColorButton::new();
-
-        hbox.append(&label);
-        hbox.append(&color_button);
-        container.append(&hbox);
-
-        options.insert(name.to_string(), color_button.upcast());
     }
 }
