@@ -19,3 +19,7 @@
 - [Vaxry](https://github.com/vaxerski) - For Hyprland
 - [rust-gtk](https://github.com/gtk-rs/gtk4-rs) - For gtk4 implementation
 - [Hyprland](https://github.com/hyprwm/Hyprland) - The window manager
+
+### Warning
+
+- This was just made sat, 12 oct 2024, so there will be a lot of bugs.
