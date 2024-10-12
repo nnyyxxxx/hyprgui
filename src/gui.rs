@@ -1285,23 +1285,9 @@ impl ConfigWidget {
                 Self::add_bool_option(
                     &container,
                     &mut options,
-                    "no_direct_scanout",
-                    "No Direct Scanout",
-                    "Disables direct scanout.",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
                     "mouse_move_focuses_monitor",
                     "Mouse Move Focuses Monitor",
                     "Whether mouse moving into a different monitor should focus it.",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "suppress_portal_warnings",
-                    "Suppress Portal Warnings",
-                    "Disables warnings about incompatible portal implementations.",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1316,20 +1302,6 @@ impl ConfigWidget {
                     "render_ahead_safezone",
                     "Render Ahead Safezone",
                     "How many ms of safezone to add to rendering ahead of time.",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "cursor_zoom_factor",
-                    "Cursor Zoom Factor",
-                    "The factor to zoom by around the cursor. Like a magnifying glass.",
-                );
-                Self::add_bool_option(
-                    &container,
-                    &mut options,
-                    "cursor_zoom_rigid",
-                    "Cursor Zoom Rigid",
-                    "Whether the zoom should follow the cursor rigidly or loosely.",
                 );
                 Self::add_bool_option(
                     &container,
