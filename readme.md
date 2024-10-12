@@ -5,17 +5,36 @@
 
 ---
 
-### Example usage:
+## Installation
 
+### Arch Linux
+
+There are 2 different [AUR](https://aur.archlinux.org) packages available:
+
+- [hyprgui](https://aur.archlinux.org/packages/hyprgui) - Latest release built from source
+- [hyprgui-bin](https://aur.archlinux.org/packages/hyprgui-bin) - Latest release in binary form
+
+Install the preferred package with:
 ```bash
-sudo pacman -S --needed rustup git base-devel gtk4
-rustup default stable
-git clone https://github.com/nnyyxxxx/hyprgui
-cd hyprgui
-cargo run
+git clone https://aur.archlinux.org/<package>.git
+cd <package>
+makepkg -si
 ```
 
-### Todo:
+Or, if you're using an [AUR Helper](https://wiki.archlinux.org/title/AUR_helpers), it's even simpler (using [paru](https://github.com/Morganamilo/paru) for example):
+```bash
+paru -S <package>
+```
+
+### Building from source
+
+1. Install Rust (preferably `rustup`) through your distro's package or [the official script](https://www.rust-lang.org/tools/install)
+2. Install `git`, `pango` and `gtk4`
+3. Clone this repository:
+`git clone https://github.com/nnyyxxxx/hyprgui && cd hyprgui`
+4. Compile the app with `cargo build --release` or run it directly with `cargo run --release`
+
+## Todo:
 
 - [x] Implement GUI
 - [x] Implement parser
@@ -23,10 +42,10 @@ cargo run
 - [ ] Improve parser
 - [ ] Improve GUI
 
-### Credits:
+## Credits:
 
-- [Nyx](https://github.com/nnyyxxxx) - For implementing the parser, rest of the GUI, and maintaining the project
-- [Adam](https://github.com/adamperkowski) - For implementing the base of the GUI and maintaining the project alongside myself
-- [Vaxry](https://github.com/vaxerski) - For Hyprland
-- [rust-gtk](https://github.com/gtk-rs/gtk4-rs) - For gtk4 implementation
+- [Nyx](https://github.com/nnyyxxxx) - Implementing the parser, rest of the GUI, and maintaining the project
+- [Adam](https://github.com/adamperkowski) - Implementing the base GUI, maintaining the AUR packgages and the project alongside myself
+- [Vaxry](https://github.com/vaxerski) - Hyprland
+- [rust-gtk](https://github.com/gtk-rs/gtk4-rs) - gtk4 implementation
 - [Hyprland](https://github.com/hyprwm/Hyprland) - The window manager
