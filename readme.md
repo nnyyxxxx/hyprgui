@@ -3,6 +3,14 @@
 - An unofficial GUI made for configuring Hyprland, built with gtk4 and rust. 🚀🦀
 - Comes with a custom-made [hyprparser](https://github.com/nnyyxxxx/hyprparser) for Hyprland's configuration file (made in rust btw). 🦀
 
+- Usage
+
+```bash
+sudo pacman -S --needed rust git base-devel
+git clone https://github.com/nnyyxxxx/hyprgui
+cd hyprgui
+cargo run
+```
 ---
 
 ### Todo
