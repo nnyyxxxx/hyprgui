@@ -8,7 +8,8 @@
 ### Example usage:
 
 ```bash
-sudo pacman -S --needed rust git base-devel
+sudo pacman -S --needed rustup git base-devel gtk4
+rustup default stable
 git clone https://github.com/nnyyxxxx/hyprgui
 cd hyprgui
 cargo run
