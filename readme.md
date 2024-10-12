@@ -21,6 +21,7 @@ cargo run
 - [x] Implement parser
 - [ ] Improve readme
 - [ ] Improve parser
+- [ ] Improve GUI
 
 ### Credits:
 
