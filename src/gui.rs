@@ -1,8 +1,8 @@
 use gtk::gdk;
 use gtk::prelude::*;
 use gtk::{
-    Application, ApplicationWindow, Box, Button, CheckButton, ColorButton, Entry, Label,
-    Orientation, ScrolledWindow, Stack, StackSidebar, Widget, HeaderBar,
+    Application, ApplicationWindow, Box, Button, CheckButton, ColorButton, Entry, HeaderBar, Label,
+    Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -30,7 +30,7 @@ impl ConfigGUI {
             .show_title_buttons(false)
             .title_widget(&gtk::Label::new(Some("Hyprland Configuration")))
             .build();
-        
+
         let save_button = Button::with_label("Save");
         header_bar.pack_end(&save_button);
 
