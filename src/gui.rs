@@ -182,8 +182,20 @@ impl ConfigWidget {
                     "Resize on Border",
                     "Enables resizing windows by clicking and dragging on borders and gaps.",
                 );
-                Self::add_int_option(&container, &mut options, "extend_border_grab_area", "Extend Border Grab Area", "Extends the area around the border where you can click and drag on, only used when general:resize_on_border is on.");
-                Self::add_bool_option(&container, &mut options, "hover_icon_on_border", "Hover Icon on Border", "Show a cursor icon when hovering over borders, only used when general:resize_on_border is on.");
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "extend_border_grab_area",
+                    "Extend Border Grab Area",
+                    "Extends the area around the border where you can click and drag on, only used when general:resize_on_border is on.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "hover_icon_on_border",
+                    "Hover Icon on Border",
+                    "Show a cursor icon when hovering over borders, only used when general:resize_on_border is on.",
+                );
 
                 Self::add_section(
                     &container,
@@ -1214,7 +1226,13 @@ impl ConfigWidget {
                     "Always Follow on DND",
                     "Will make mouse focus follow the mouse when drag and dropping.",
                 );
-                Self::add_bool_option(&container, &mut options, "layers_hog_keyboard_focus", "Layers Hog Keyboard Focus", "If true, will make keyboard-interactive layers keep their focus on mouse move.");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "layers_hog_keyboard_focus",
+                    "Layers Hog Keyboard Focus",
+                    "If true, will make keyboard-interactive layers keep their focus on mouse move.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -1285,7 +1303,13 @@ impl ConfigWidget {
                     "Suppress Portal Warnings",
                     "Disables warnings about incompatible portal implementations.",
                 );
-                Self::add_bool_option(&container, &mut options, "render_ahead_of_time", "Render Ahead of Time", "Starts rendering before your monitor displays a frame in order to lower latency.");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "render_ahead_of_time",
+                    "Render Ahead of Time",
+                    "Starts rendering before your monitor displays a frame in order to lower latency.",
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -1329,16 +1353,76 @@ impl ConfigWidget {
                     "Configure keybinding behavior.",
                     first_section.clone(),
                 );
-                Self::add_bool_option(&container, &mut options, "pass_mouse_when_bound", "Pass Mouse When Bound", "If disabled, will not pass the mouse events to apps / dragging windows around if a keybind has been triggered.");
-                Self::add_int_option(&container, &mut options, "scroll_event_delay", "Scroll Event Delay", "In ms, how many ms to wait after a scroll event to allow passing another one for the binds.");
-                Self::add_bool_option(&container, &mut options, "workspace_back_and_forth", "Workspace Back and Forth", "If enabled, an attempt to switch to the currently focused workspace will instead switch to the previous workspace.");
-                Self::add_bool_option(&container, &mut options, "allow_workspace_cycles", "Allow Workspace Cycles", "If enabled, workspaces don't forget their previous workspace, so cycles can be created.");
-                Self::add_int_option(&container, &mut options, "workspace_center_on", "Workspace Center On", "Whether switching workspaces should center the cursor on the workspace (0) or on the last active window for that workspace (1).");
-                Self::add_int_option(&container, &mut options, "focus_preferred_method", "Focus Preferred Method", "Sets the preferred focus finding method when using focuswindow/movewindow/etc with a direction.");
-                Self::add_bool_option(&container, &mut options, "ignore_group_lock", "Ignore Group Lock", "If enabled, dispatchers like moveintogroup, moveoutofgroup and movewindoworgroup will ignore lock per group.");
-                Self::add_bool_option(&container, &mut options, "movefocus_cycles_fullscreen", "Movefocus Cycles Fullscreen", "If enabled, when on a fullscreen window, movefocus will cycle fullscreen, if not, it will move the focus in a direction.");
-                Self::add_bool_option(&container, &mut options, "disable_keybind_grabbing", "Disable Keybind Grabbing", "If enabled, apps that request keybinds to be disabled (e.g. VMs) will not be able to do so.");
-                Self::add_bool_option(&container, &mut options, "window_direction_monitor_fallback", "Window Direction Monitor Fallback", "If enabled, moving a window or focus over the edge of a monitor with a direction will move it to the next monitor in that direction.");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "pass_mouse_when_bound",
+                    "Pass Mouse When Bound",
+                    "If disabled, will not pass the mouse events to apps / dragging windows around if a keybind has been triggered.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "scroll_event_delay",
+                    "Scroll Event Delay",
+                    "In ms, how many ms to wait after a scroll event to allow passing another one for the binds.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "workspace_back_and_forth",
+                    "Workspace Back and Forth",
+                    "If enabled, an attempt to switch to the currently focused workspace will instead switch to the previous workspace.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "allow_workspace_cycles",
+                    "Allow Workspace Cycles",
+                    "If enabled, workspaces don't forget their previous workspace, so cycles can be created.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "workspace_center_on",
+                    "Workspace Center On",
+                    "Whether switching workspaces should center the cursor on the workspace (0) or on the last active window for that workspace (1).",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "focus_preferred_method",
+                    "Focus Preferred Method",
+                    "Sets the preferred focus finding method when using focuswindow/movewindow/etc with a direction.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "ignore_group_lock",
+                    "Ignore Group Lock",
+                    "If enabled, dispatchers like moveintogroup, moveoutofgroup and movewindoworgroup will ignore lock per group.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "movefocus_cycles_fullscreen",
+                    "Movefocus Cycles Fullscreen",
+                    "If enabled, when on a fullscreen window, movefocus will cycle fullscreen, if not, it will move the focus in a direction.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "disable_keybind_grabbing",
+                    "Disable Keybind Grabbing",
+                    "If enabled, apps that request keybinds to be disabled (e.g. VMs) will not be able to do so.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "window_direction_monitor_fallback",
+                    "Window Direction Monitor Fallback",
+                    "If enabled, moving a window or focus over the edge of a monitor with a direction will move it to the next monitor in that direction.",
+                );
             }
             "xwayland" => {
                 Self::add_section(
@@ -1354,7 +1438,13 @@ impl ConfigWidget {
                     "Enabled",
                     "Allow running applications using X11.",
                 );
-                Self::add_bool_option(&container, &mut options, "use_nearest_neighbor", "Use Nearest Neighbor", "Uses the nearest neighbor filtering for xwayland apps, making them pixelated rather than blurry.");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "use_nearest_neighbor",
+                    "Use Nearest Neighbor",
+                    "Uses the nearest neighbor filtering for xwayland apps, making them pixelated rather than blurry.",
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -1370,8 +1460,20 @@ impl ConfigWidget {
                     "Configure OpenGL behavior.",
                     first_section.clone(),
                 );
-                Self::add_bool_option(&container, &mut options, "nvidia_anti_flicker", "Nvidia Anti Flicker", "Reduces flickering on nvidia at the cost of possible frame drops on lower-end GPUs.");
-                Self::add_int_option(&container, &mut options, "force_introspection", "Force Introspection", "Forces introspection at all times. Introspection is aimed at reducing GPU usage in certain cases, but might cause graphical glitches on nvidia.");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "nvidia_anti_flicker",
+                    "Nvidia Anti Flicker",
+                    "Reduces flickering on nvidia at the cost of possible frame drops on lower-end GPUs.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "force_introspection",
+                    "Force Introspection",
+                    "Forces introspection at all times. Introspection is aimed at reducing GPU usage in certain cases, but might cause graphical glitches on nvidia.",
+                );
             }
             "render" => {
                 Self::add_section(
@@ -1394,7 +1496,13 @@ impl ConfigWidget {
                     "Explicit Sync KMS",
                     "Whether to enable explicit sync support for the KMS layer.",
                 );
-                Self::add_bool_option(&container, &mut options, "direct_scanout", "Direct Scanout", "Enables direct scanout. Direct scanout attempts to reduce lag when there is only one fullscreen application on a screen.");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "direct_scanout",
+                    "Direct Scanout",
+                    "Enables direct scanout. Direct scanout attempts to reduce lag when there is only one fullscreen application on a screen.",
+                );
             }
             "cursor" => {
                 Self::add_section(
@@ -1417,7 +1525,13 @@ impl ConfigWidget {
                     "No Hardware Cursors",
                     "Disables hardware cursors.",
                 );
-                Self::add_bool_option(&container, &mut options, "no_break_fs_vrr", "No Break FS VRR", "Disables scheduling new frames on cursor movement for fullscreen apps with VRR enabled to avoid framerate spikes.");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "no_break_fs_vrr",
+                    "No Break FS VRR",
+                    "Disables scheduling new frames on cursor movement for fullscreen apps with VRR enabled to avoid framerate spikes.",
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -1446,8 +1560,20 @@ impl ConfigWidget {
                     "No Warps",
                     "If true, will not warp the cursor in many cases.",
                 );
-                Self::add_bool_option(&container, &mut options, "persistent_warps", "Persistent Warps", "When a window is refocused, the cursor returns to its last position relative to that window.");
-                Self::add_bool_option(&container, &mut options, "warp_on_change_workspace", "Warp on Change Workspace", "If true, move the cursor to the last focused window after changing the workspace.");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "persistent_warps",
+                    "Persistent Warps",
+                    "When a window is refocused, the cursor returns to its last position relative to that window.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "warp_on_change_workspace",
+                    "Warp on Change Workspace",
+                    "If true, move the cursor to the last focused window after changing the workspace.",
+                );
                 Self::add_string_option(
                     &container,
                     &mut options,
@@ -1483,8 +1609,20 @@ impl ConfigWidget {
                     "Hide on Key Press",
                     "Hides the cursor when you press any key until the mouse is moved.",
                 );
-                Self::add_bool_option(&container, &mut options, "hide_on_touch", "Hide on Touch", "Hides the cursor when the last input was a touch input until a mouse input is done.");
-                Self::add_bool_option(&container, &mut options, "allow_dumb_copy", "Allow Dumb Copy", "Makes HW cursors work on Nvidia, at the cost of a possible hitch whenever the image changes.");
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "hide_on_touch",
+                    "Hide on Touch",
+                    "Hides the cursor when the last input was a touch input until a mouse input is done.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "allow_dumb_copy",
+                    "Allow Dumb Copy",
+                    "Makes HW cursors work on Nvidia, at the cost of a possible hitch whenever the image changes.",
+                );
             }
             "debug" => {
                 Self::add_section(
