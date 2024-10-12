@@ -1,8 +1,9 @@
+use gtk::gdk;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
-    Application, ApplicationWindow, Box, Button, CheckButton, Entry, Label, Orientation,
-    ScrolledWindow, Stack, StackSidebar, Widget,
+    Application, ApplicationWindow, Box, Button, CheckButton, ColorButton, Entry, Label,
+    Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
 };
 
 use hyprland_parser::HyprlandConfig;
@@ -199,25 +200,25 @@ impl ConfigWidget {
                     "gaps_workspaces",
                     "Gaps Workspaces",
                 );
-                Self::add_string_option(
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "col.inactive_border",
                     "Inactive Border Color",
                 );
-                Self::add_string_option(
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "col.active_border",
                     "Active Border Color",
                 );
-                Self::add_string_option(
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "col.nogroup_border",
                     "No Group Border Color",
                 );
-                Self::add_string_option(
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "col.nogroup_border_active",
@@ -285,8 +286,8 @@ impl ConfigWidget {
                     "shadow_ignore_window",
                     "Shadow Ignore Window",
                 );
-                Self::add_string_option(&container, &mut options, "col.shadow", "Shadow Color");
-                Self::add_string_option(
+                Self::add_color_option(&container, &mut options, "col.shadow", "Shadow Color");
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "col.shadow_inactive",
@@ -639,25 +640,25 @@ impl ConfigWidget {
                     "merge_floated_into_tiled_on_groupbar",
                     "Merge Floated Into Tiled on Groupbar",
                 );
-                Self::add_string_option(
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "col.border_active",
                     "Active Border Color",
                 );
-                Self::add_string_option(
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "col.border_inactive",
                     "Inactive Border Color",
                 );
-                Self::add_string_option(
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "col.border_locked_active",
                     "Locked Active Border Color",
                 );
-                Self::add_string_option(
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "col.border_locked_inactive",
@@ -727,7 +728,7 @@ impl ConfigWidget {
                     "disable_splash_rendering",
                     "Disable Splash Rendering",
                 );
-                Self::add_string_option(&container, &mut options, "col.splash", "Splash Color");
+                Self::add_color_option(&container, &mut options, "col.splash", "Splash Color");
                 Self::add_string_option(&container, &mut options, "font_family", "Font Family");
                 Self::add_string_option(
                     &container,
@@ -823,7 +824,7 @@ impl ConfigWidget {
                     "allow_session_lock_restore",
                     "Allow Session Lock Restore",
                 );
-                Self::add_string_option(
+                Self::add_color_option(
                     &container,
                     &mut options,
                     "background_color",
@@ -1154,6 +1155,10 @@ impl ConfigWidget {
                 entry_widget.set_text(&value);
             } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
                 checkbox.set_active(value == "true");
+            } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
+                if let Some(color) = parse_color(&value) {
+                    color_button.set_rgba(&color);
+                }
             }
         }
     }
@@ -1178,6 +1183,8 @@ impl ConfigWidget {
                 entry.text().to_string()
             } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
                 checkbox.is_active().to_string()
+            } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
+                format_color(&color_button.rgba())
             } else {
                 continue;
             };
@@ -1214,4 +1221,63 @@ impl ConfigWidget {
 
         options.insert(name.to_string(), entry.upcast());
     }
+
+    fn add_color_option(
+        container: &Box,
+        options: &mut HashMap<String, Widget>,
+        name: &str,
+        label: &str,
+    ) {
+        let hbox = Box::new(Orientation::Horizontal, 5);
+        let label = Label::new(Some(label));
+        let color_button = ColorButton::new();
+
+        hbox.append(&label);
+        hbox.append(&color_button);
+        container.append(&hbox);
+
+        options.insert(name.to_string(), color_button.upcast());
+    }
+}
+
+fn parse_color(color_str: &str) -> Option<gdk::RGBA> {
+    if color_str.starts_with("rgba(") {
+        let rgba = color_str.trim_start_matches("rgba(").trim_end_matches(')');
+        let rgba = u32::from_str_radix(rgba, 16).ok()?;
+        Some(gdk::RGBA::new(
+            ((rgba >> 24) & 0xFF) as f32 / 255.0,
+            ((rgba >> 16) & 0xFF) as f32 / 255.0,
+            ((rgba >> 8) & 0xFF) as f32 / 255.0,
+            (rgba & 0xFF) as f32 / 255.0,
+        ))
+    } else if color_str.starts_with("rgb(") {
+        let rgb = color_str.trim_start_matches("rgb(").trim_end_matches(')');
+        let rgb = u32::from_str_radix(rgb, 16).ok()?;
+        Some(gdk::RGBA::new(
+            ((rgb >> 16) & 0xFF) as f32 / 255.0,
+            ((rgb >> 8) & 0xFF) as f32 / 255.0,
+            (rgb & 0xFF) as f32 / 255.0,
+            1.0,
+        ))
+    } else if color_str.starts_with("0x") {
+        let argb = u32::from_str_radix(&color_str[2..], 16).ok()?;
+        Some(gdk::RGBA::new(
+            ((argb >> 16) & 0xFF) as f32 / 255.0,
+            ((argb >> 8) & 0xFF) as f32 / 255.0,
+            (argb & 0xFF) as f32 / 255.0,
+            ((argb >> 24) & 0xFF) as f32 / 255.0,
+        ))
+    } else {
+        None
+    }
+}
+
+fn format_color(color: &gdk::RGBA) -> String {
+    format!(
+        "rgba({:02x}{:02x}{:02x}{:02x})",
+        (color.red() * 255.0) as u8,
+        (color.green() * 255.0) as u8,
+        (color.blue() * 255.0) as u8,
+        (color.alpha() * 255.0) as u8
+    )
 }
