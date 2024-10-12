@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use gtk::{
     prelude::*, Application, ApplicationWindow, Box, Button, CheckButton, FileChooserAction,
@@ -51,7 +51,10 @@ impl ConfigGUI {
         }
     }
 
-    pub fn open_config_file(&self) {
+    pub fn open_config_file<F>(&self, callback: Rc<RefCell<F>>)
+    where
+        F: Fn(String) + 'static,
+    {
         let dialog = FileChooserDialog::builder()
             .title("Open Hyprland Configuration File")
             .action(FileChooserAction::Open)
@@ -68,19 +71,25 @@ impl ConfigGUI {
 
         dialog.add_filter(&filter);
 
-        dialog.connect_response(move |dialog, response| {
-            match response {
-                ResponseType::Accept => {
-                    if let Some(filename) = dialog.file() {
-                        println!("{:?}", filename);
+        dialog.connect_response({
+            let callback = callback.clone();
+            move |dialog, response| {
+                match response {
+                    ResponseType::Accept => {
+                        if let Some(file) = dialog.file() {
+                            if let Some(filename) = file.path() {
+                                let callback = callback.borrow();
+                                callback(filename.to_string_lossy().to_string());
+                            }
+                        }
                     }
+                    ResponseType::Cancel => {
+                        println!("canceled");
+                    }
+                    _ => {}
                 }
-                ResponseType::Cancel => {
-                    println!("canceled");
-                }
-                _ => {}
+                dialog.close();
             }
-            dialog.close();
         });
 
         dialog.show();

@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use gtk::{prelude::*, Application};
 
 mod gui;
@@ -16,8 +18,13 @@ fn main() -> gtk::glib::ExitCode {
 fn build_ui(app: &Application) {
     let gui = ConfigGUI::new(app);
     gui.window.present();
+
+    let callback = Rc::new(RefCell::new(|filename: String| {
+        println!("Selected file: {}", filename);
+    }));
+
     gui.open_button.clone().connect_clicked(move |_| {
-        gui.open_config_file();
+        gui.open_config_file(callback.clone());
     });
 }
 
