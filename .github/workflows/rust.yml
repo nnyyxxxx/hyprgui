@@ -25,7 +25,13 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y libpango1.0-dev build-essential libgtk-4-dev
+          sudo apt install -y build-essential
+          sudo apt-get install -y \
+            libpango1.0-dev \
+            libcairo2-dev \
+            libatk1.0-dev \
+            libgtk-4-dev \
+            libsoup2.4-dev
 
       - name: Set up dependencies
         run: |
@@ -46,6 +52,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+          sudo apt-get install -y \
+            libpango1.0-dev \
+            libcairo2-dev \
+            libatk1.0-dev \
+            libgtk-4-dev \
+            libsoup2.4-dev
 
       - name: Set up dependencies
         run: |
