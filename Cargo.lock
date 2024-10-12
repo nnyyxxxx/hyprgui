@@ -391,13 +391,13 @@ name = "hyprgui"
 version = "0.1.0"
 dependencies = [
  "gtk4",
- "hyprland-parser",
+ "hyprparser",
 ]
 
 [[package]]
-name = "hyprland-parser"
+name = "hyprparser"
 version = "0.1.0"
-source = "git+https://github.com/nnyyxxxx/hyprparser.git#9415a363e242d680425902fae82d5eebe9ea3131"
+source = "git+https://github.com/nnyyxxxx/hyprparser.git#703ab8ed3edb71aa6dfa43269b3b2b4fa1e9125f"
 
 [[package]]
 name = "indexmap"
