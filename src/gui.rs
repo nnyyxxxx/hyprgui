@@ -79,8 +79,6 @@ impl ConfigGUI {
             "gestures",
             "misc",
             "binds",
-            "windowrules",
-            "layouts",
         ] {
             let widget = ConfigWidget::new(category);
             stack.add_titled(&widget.container, Some(category), category);
