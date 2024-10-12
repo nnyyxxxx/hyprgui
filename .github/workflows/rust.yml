@@ -13,6 +13,7 @@ on:
       - 'src/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -25,6 +26,11 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y libpango1.0-dev build-essential libgtk-4-dev
+
+      - name: Set up dependencies
+        run: |
+          export SYSTEM_DEPS_PANGO_NO_PKG_CONFIG="true"
+          export SYSTEM_DEPS_PANGO_LIB="pango-1.0"
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -40,6 +46,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up dependencies
+        run: |
+          export SYSTEM_DEPS_PANGO_NO_PKG_CONFIG="true"
+          export SYSTEM_DEPS_PANGO_LIB="pango-1.0"
 
       - name: Run cargo clippy
         run: |
