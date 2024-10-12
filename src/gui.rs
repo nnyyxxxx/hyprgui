@@ -3,7 +3,7 @@ use gtk::prelude::*;
 use gtk::Switch;
 use gtk::{
     Application, ApplicationWindow, Box, Button, ColorButton, Entry, Frame, HeaderBar, Image,
-    Label, Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
+    Label, Orientation, Popover, ScrolledWindow, Stack, StackSidebar, Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -1813,10 +1813,23 @@ impl ConfigWidget {
         label_widget.set_halign(gtk::Align::Start);
 
         let tooltip_button = Button::new();
-        tooltip_button.set_tooltip_text(Some(description));
         let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
         tooltip_button.set_child(Some(&question_mark_icon));
         tooltip_button.set_has_frame(false);
+
+        let popover = Popover::new();
+        let description_label = Label::new(Some(description));
+        description_label.set_margin_top(5);
+        description_label.set_margin_bottom(5);
+        description_label.set_margin_start(5);
+        description_label.set_margin_end(5);
+        popover.set_child(Some(&description_label));
+        popover.set_position(gtk::PositionType::Right);
+
+        tooltip_button.connect_clicked(move |button| {
+            popover.set_parent(button);
+            popover.popup();
+        });
 
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
@@ -1853,10 +1866,23 @@ impl ConfigWidget {
         label_widget.set_halign(gtk::Align::Start);
 
         let tooltip_button = Button::new();
-        tooltip_button.set_tooltip_text(Some(description));
         let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
         tooltip_button.set_child(Some(&question_mark_icon));
         tooltip_button.set_has_frame(false);
+
+        let popover = Popover::new();
+        let description_label = Label::new(Some(description));
+        description_label.set_margin_top(5);
+        description_label.set_margin_bottom(5);
+        description_label.set_margin_start(5);
+        description_label.set_margin_end(5);
+        popover.set_child(Some(&description_label));
+        popover.set_position(gtk::PositionType::Right);
+
+        tooltip_button.connect_clicked(move |button| {
+            popover.set_parent(button);
+            popover.popup();
+        });
 
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
@@ -1892,10 +1918,23 @@ impl ConfigWidget {
         label_widget.set_halign(gtk::Align::Start);
 
         let tooltip_button = Button::new();
-        tooltip_button.set_tooltip_text(Some(description));
         let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
         tooltip_button.set_child(Some(&question_mark_icon));
         tooltip_button.set_has_frame(false);
+
+        let popover = Popover::new();
+        let description_label = Label::new(Some(description));
+        description_label.set_margin_top(5);
+        description_label.set_margin_bottom(5);
+        description_label.set_margin_start(5);
+        description_label.set_margin_end(5);
+        popover.set_child(Some(&description_label));
+        popover.set_position(gtk::PositionType::Right);
+
+        tooltip_button.connect_clicked(move |button| {
+            popover.set_parent(button);
+            popover.popup();
+        });
 
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
@@ -1933,10 +1972,23 @@ impl ConfigWidget {
         label_widget.set_halign(gtk::Align::Start);
 
         let tooltip_button = Button::new();
-        tooltip_button.set_tooltip_text(Some(description));
         let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
         tooltip_button.set_child(Some(&question_mark_icon));
         tooltip_button.set_has_frame(false);
+
+        let popover = Popover::new();
+        let description_label = Label::new(Some(description));
+        description_label.set_margin_top(5);
+        description_label.set_margin_bottom(5);
+        description_label.set_margin_start(5);
+        description_label.set_margin_end(5);
+        popover.set_child(Some(&description_label));
+        popover.set_position(gtk::PositionType::Right);
+
+        tooltip_button.connect_clicked(move |button| {
+            popover.set_parent(button);
+            popover.popup();
+        });
 
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
@@ -1979,10 +2031,23 @@ impl ConfigWidget {
         label_widget.set_halign(gtk::Align::Start);
 
         let tooltip_button = Button::new();
-        tooltip_button.set_tooltip_text(Some(description));
         let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
         tooltip_button.set_child(Some(&question_mark_icon));
         tooltip_button.set_has_frame(false);
+
+        let popover = Popover::new();
+        let description_label = Label::new(Some(description));
+        description_label.set_margin_top(5);
+        description_label.set_margin_bottom(5);
+        description_label.set_margin_start(5);
+        description_label.set_margin_end(5);
+        popover.set_child(Some(&description_label));
+        popover.set_position(gtk::PositionType::Right);
+
+        tooltip_button.connect_clicked(move |button| {
+            popover.set_parent(button);
+            popover.popup();
+        });
 
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
