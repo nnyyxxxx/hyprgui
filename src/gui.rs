@@ -1553,23 +1553,16 @@ impl ConfigWidget {
 
         let button_box = Box::new(Orientation::Horizontal, 2);
 
-        let minus_button = Button::new();
-        minus_button.set_label("-");
-        minus_button.add_css_class("circular");
-        minus_button.set_size_request(5, 5);
+        let minus_button = Self::create_button_with_icon("list-remove-symbolic", 12);
+        let plus_button = Self::create_button_with_icon("list-add-symbolic", 12);
 
-        let plus_button = Button::new();
-        plus_button.set_label("+");
-        plus_button.add_css_class("circular");
-        plus_button.set_size_request(5, 5);
-
-        let value = Rc::new(RefCell::new(0));
+        let value: Rc<RefCell<i32>> = Rc::new(RefCell::new(0));
 
         let value_clone = value.clone();
         let value_label_clone = value_label.clone();
         minus_button.connect_clicked(move |_| {
             let mut current_value = value_clone.borrow_mut();
-            *current_value -= 1;
+            *current_value = current_value.saturating_sub(1);
             value_label_clone.set_text(&current_value.to_string());
         });
 
@@ -1577,7 +1570,7 @@ impl ConfigWidget {
         let value_label_clone = value_label.clone();
         plus_button.connect_clicked(move |_| {
             let mut current_value = value_clone.borrow_mut();
-            *current_value += 1;
+            *current_value = current_value.saturating_add(1);
             value_label_clone.set_text(&current_value.to_string());
         });
 
@@ -1591,7 +1584,8 @@ impl ConfigWidget {
 
         container.append(&hbox);
 
-        options.insert(name.to_string(), value_label.upcast());
+        options.insert(name.to_string(), value_label.clone().upcast());
+        options.insert(format!("{}_value", name), value_label.clone().upcast());
     }
 
     fn add_bool_option(
@@ -1733,7 +1727,16 @@ impl ConfigWidget {
         for (name, widget) in &self.options {
             let value = self.extract_value(config, category, name);
             if let Some(label) = widget.downcast_ref::<Label>() {
-                label.set_text(&value);
+                if name.ends_with("_value") {
+                    continue;
+                }
+                let int_value = value.parse::<i32>().unwrap_or(0);
+                label.set_text(&int_value.to_string());
+                if let Some(value_widget) = self.options.get(&format!("{}_value", name)) {
+                    if let Some(value_label) = value_widget.downcast_ref::<Label>() {
+                        value_label.set_text(&int_value.to_string());
+                    }
+                }
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
@@ -1822,7 +1825,11 @@ impl ConfigWidget {
         for (name, widget) in &self.options {
             if changes.contains(&(category.to_string(), name.to_string())) {
                 let value = if let Some(label) = widget.downcast_ref::<Label>() {
-                    label.text().to_string()
+                    if name.ends_with("_value") {
+                        label.text().to_string()
+                    } else {
+                        label.text().to_string()
+                    }
                 } else if let Some(entry) = widget.downcast_ref::<Entry>() {
                     entry.text().to_string()
                 } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
@@ -1849,5 +1856,16 @@ impl ConfigWidget {
                 }
             }
         }
+    }
+
+    fn create_button_with_icon(icon_name: &str, size: i32) -> Button {
+        let button = Button::new();
+        let image = gtk::Image::from_icon_name(icon_name);
+        image.set_pixel_size(size);
+        image.set_valign(gtk::Align::Center);
+        button.set_child(Some(&image));
+        button.add_css_class("circular");
+        button.set_valign(gtk::Align::Center);
+        button
     }
 }
