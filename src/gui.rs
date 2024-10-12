@@ -3,7 +3,7 @@ use gtk::prelude::*;
 use gtk::Switch;
 use gtk::{
     Application, ApplicationWindow, Box, Button, CheckButton, ColorButton, Entry, Frame, HeaderBar,
-    Label, Orientation, ScrolledWindow, Separator, Stack, StackSidebar, Widget,
+    Label, Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -1556,12 +1556,12 @@ impl ConfigWidget {
         let minus_button = Button::new();
         minus_button.set_label("-");
         minus_button.add_css_class("circular");
-        minus_button.set_size_request(18, 18);
+        minus_button.set_size_request(5, 5);
 
         let plus_button = Button::new();
         plus_button.set_label("+");
         plus_button.add_css_class("circular");
-        plus_button.set_size_request(18, 18);
+        plus_button.set_size_request(5, 5);
 
         let value = Rc::new(RefCell::new(0));
 
@@ -1724,44 +1724,6 @@ impl ConfigWidget {
         options.insert(name.to_string(), color_button.upcast());
     }
 
-    fn add_vec2_option(
-        container: &Box,
-        options: &mut HashMap<String, Widget>,
-        name: &str,
-        label: &str,
-        description: &str,
-    ) {
-        let hbox = Box::new(Orientation::Horizontal, 10);
-        hbox.set_halign(gtk::Align::Center);
-
-        let vbox = Box::new(Orientation::Vertical, 5);
-        let label = Label::new(Some(label));
-        label.set_halign(gtk::Align::Start);
-        vbox.append(&label);
-
-        let desc_label = Label::new(Some(description));
-        desc_label.set_halign(gtk::Align::Start);
-        desc_label.set_opacity(0.7);
-        vbox.append(&desc_label);
-
-        let entry_x = Entry::new();
-        entry_x.set_width_request(80);
-        let entry_y = Entry::new();
-        entry_y.set_width_request(80);
-
-        let entry_box = Box::new(Orientation::Horizontal, 5);
-        entry_box.append(&entry_x);
-        entry_box.append(&entry_y);
-
-        hbox.append(&vbox);
-        hbox.append(&entry_box);
-
-        container.append(&hbox);
-
-        options.insert(format!("{}_x", name), entry_x.upcast());
-        options.insert(format!("{}_y", name), entry_y.upcast());
-    }
-
     fn load_config(
         &self,
         config: &HyprlandConfig,
@@ -1770,7 +1732,21 @@ impl ConfigWidget {
     ) {
         for (name, widget) in &self.options {
             let value = self.extract_value(config, category, name);
-            if let Some(entry_widget) = widget.downcast_ref::<Entry>() {
+            if let Some(label) = widget.downcast_ref::<Label>() {
+                label.set_text(&value);
+                let category = category.to_string();
+                let name = name.to_string();
+                let changed_options = changed_options.clone();
+                let original_value = value.clone();
+                label.connect_notify_local(Some("label"), move |label, _| {
+                    let mut changes = changed_options.borrow_mut();
+                    if label.text() != original_value {
+                        changes.insert((category.clone(), name.clone()));
+                    } else {
+                        changes.remove(&(category.clone(), name.clone()));
+                    }
+                });
+            } else if let Some(entry_widget) = widget.downcast_ref::<Entry>() {
                 entry_widget.set_text(&value);
                 let category = category.to_string();
                 let name = name.to_string();
@@ -1845,7 +1821,9 @@ impl ConfigWidget {
     ) {
         for (name, widget) in &self.options {
             if changes.contains(&(category.to_string(), name.to_string())) {
-                let value = if let Some(entry) = widget.downcast_ref::<Entry>() {
+                let value = if let Some(label) = widget.downcast_ref::<Label>() {
+                    label.text().to_string()
+                } else if let Some(entry) = widget.downcast_ref::<Entry>() {
                     entry.text().to_string()
                 } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
                     checkbox.is_active().to_string()
