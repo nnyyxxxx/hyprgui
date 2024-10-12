@@ -1,7 +1,9 @@
 use gtk::prelude::*;
 use gtk::Application;
 use hyprparser::parse_config;
+use libc;
 use std::fs;
+use std::os::unix::io::AsRawFd;
 use std::{cell::RefCell, rc::Rc};
 
 mod gui;
@@ -9,6 +11,11 @@ mod gui;
 const CONFIG_PATH: &str = "~/.config/hypr/hyprland.conf";
 
 fn main() {
+    unsafe {
+        let dev_null = std::fs::File::open("/dev/null").unwrap();
+        libc::dup2(dev_null.as_raw_fd(), 2);
+    }
+
     let app = Application::builder()
         .application_id("nnyyxxxx.hyprgui")
         .build();

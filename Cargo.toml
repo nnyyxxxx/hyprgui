@@ -18,3 +18,4 @@ edition = "2021"
 [dependencies]
 gtk = { version = "0.9.2", package = "gtk4" }
 hyprparser = { git = "https://github.com/nnyyxxxx/hyprparser.git" }
+libc = "0.2"
