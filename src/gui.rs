@@ -1544,48 +1544,17 @@ impl ConfigWidget {
         desc_label.set_opacity(0.7);
         vbox.append(&desc_label);
 
-        let control_box = Box::new(Orientation::Horizontal, 5);
-        control_box.set_halign(gtk::Align::End);
-
-        let value_label = Label::new(Some("0"));
-        value_label.set_width_request(20);
-        value_label.set_halign(gtk::Align::End);
-
-        let button_box = Box::new(Orientation::Horizontal, 2);
-
-        let minus_button = Self::create_button_with_icon("list-remove-symbolic", 12);
-        let plus_button = Self::create_button_with_icon("list-add-symbolic", 12);
-
-        let value: Rc<RefCell<i32>> = Rc::new(RefCell::new(0));
-
-        let value_clone = value.clone();
-        let value_label_clone = value_label.clone();
-        minus_button.connect_clicked(move |_| {
-            let mut current_value = value_clone.borrow_mut();
-            *current_value = current_value.saturating_sub(1);
-            value_label_clone.set_text(&current_value.to_string());
-        });
-
-        let value_clone = value.clone();
-        let value_label_clone = value_label.clone();
-        plus_button.connect_clicked(move |_| {
-            let mut current_value = value_clone.borrow_mut();
-            *current_value = current_value.saturating_add(1);
-            value_label_clone.set_text(&current_value.to_string());
-        });
-
-        control_box.append(&value_label);
-        button_box.append(&minus_button);
-        button_box.append(&plus_button);
-        control_box.append(&button_box);
+        let spin_button = gtk::SpinButton::with_range(-1000.0, 1000.0, 1.0);
+        spin_button.set_halign(gtk::Align::End);
+        spin_button.set_hexpand(true);
+        spin_button.set_width_request(100);
 
         hbox.append(&vbox);
-        hbox.append(&control_box);
+        hbox.append(&spin_button);
 
         container.append(&hbox);
 
-        options.insert(name.to_string(), value_label.clone().upcast());
-        options.insert(format!("{}_value", name), value_label.clone().upcast());
+        options.insert(name.to_string(), spin_button.upcast());
     }
 
     fn add_bool_option(
@@ -1726,35 +1695,27 @@ impl ConfigWidget {
     ) {
         for (name, widget) in &self.options {
             let value = self.extract_value(config, category, name);
-            if let Some(label) = widget.downcast_ref::<Label>() {
-                if name.ends_with("_value") {
-                    continue;
-                }
-                let int_value = value.parse::<i32>().unwrap_or(0);
-                label.set_text(&int_value.to_string());
-                if let Some(value_widget) = self.options.get(&format!("{}_value", name)) {
-                    if let Some(value_label) = value_widget.downcast_ref::<Label>() {
-                        value_label.set_text(&int_value.to_string());
-                    }
-                }
+            if let Some(spin_button) = widget.downcast_ref::<gtk::SpinButton>() {
+                let int_value = value.parse::<f64>().unwrap_or(0.0);
+                spin_button.set_value(int_value);
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
                 let original_value = value.clone();
-                label.connect_notify_local(Some("label"), move |label, _| {
+                spin_button.connect_value_changed(move |sb| {
                     let mut changes = changed_options.borrow_mut();
-                    if label.text() != original_value {
+                    if sb.value().to_string() != original_value {
                         changes.insert((category.clone(), name.clone()));
                     } else {
                         changes.remove(&(category.clone(), name.clone()));
                     }
                 });
-            } else if let Some(entry_widget) = widget.downcast_ref::<Entry>() {
-                entry_widget.set_text(&value);
+            } else if let Some(entry) = widget.downcast_ref::<Entry>() {
+                entry.set_text(&value);
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
-                entry_widget.connect_changed(move |entry| {
+                entry.connect_changed(move |entry| {
                     let mut changes = changed_options.borrow_mut();
                     if entry.text() != value {
                         changes.insert((category.clone(), name.clone()));
@@ -1824,12 +1785,8 @@ impl ConfigWidget {
     ) {
         for (name, widget) in &self.options {
             if changes.contains(&(category.to_string(), name.to_string())) {
-                let value = if let Some(label) = widget.downcast_ref::<Label>() {
-                    if name.ends_with("_value") {
-                        label.text().to_string()
-                    } else {
-                        label.text().to_string()
-                    }
+                let value = if let Some(spin_button) = widget.downcast_ref::<gtk::SpinButton>() {
+                    spin_button.value().to_string()
                 } else if let Some(entry) = widget.downcast_ref::<Entry>() {
                     entry.text().to_string()
                 } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
@@ -1856,16 +1813,5 @@ impl ConfigWidget {
                 }
             }
         }
-    }
-
-    fn create_button_with_icon(icon_name: &str, size: i32) -> Button {
-        let button = Button::new();
-        let image = gtk::Image::from_icon_name(icon_name);
-        image.set_pixel_size(size);
-        image.set_valign(gtk::Align::Center);
-        button.set_child(Some(&image));
-        button.add_css_class("circular");
-        button.set_valign(gtk::Align::Center);
-        button
     }
 }
