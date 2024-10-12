@@ -16,5 +16,5 @@ categories = ["gui"]
 edition = "2021"
 
 [dependencies]
-gtk = { version = "0.9.2", package = "gtk4", features = ["v4_16"] }
-hyprland-parser = { git = "https://github.com/nnyyxxxx/hyprparser.git" }
+gtk = { version = "0.9.2", package = "gtk4" }
+hyprparser = { git = "https://github.com/nnyyxxxx/hyprparser.git" }
