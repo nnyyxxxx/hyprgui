@@ -2,8 +2,8 @@ use gtk::gdk;
 use gtk::prelude::*;
 use gtk::Switch;
 use gtk::{
-    Application, ApplicationWindow, Box, Button, CheckButton, ColorButton, Entry, Frame, HeaderBar,
-    Label, Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
+    Application, ApplicationWindow, Box, Button, ColorButton, Entry, Frame, HeaderBar, Label,
+    Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -1966,8 +1966,8 @@ impl ConfigWidget {
         for (name, widget) in &self.options {
             let value = self.extract_value(config, category, name);
             if let Some(spin_button) = widget.downcast_ref::<gtk::SpinButton>() {
-                let int_value = value.parse::<f64>().unwrap_or(0.0);
-                spin_button.set_value(int_value);
+                let float_value = value.parse::<f64>().unwrap_or(0.0);
+                spin_button.set_value(float_value);
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
@@ -1985,22 +1985,24 @@ impl ConfigWidget {
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
+                let original_value = value.clone();
                 entry.connect_changed(move |entry| {
                     let mut changes = changed_options.borrow_mut();
-                    if entry.text() != value {
+                    if entry.text() != original_value {
                         changes.insert((category.clone(), name.clone()));
                     } else {
                         changes.remove(&(category.clone(), name.clone()));
                     }
                 });
-            } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
-                checkbox.set_active(value == "true");
+            } else if let Some(switch) = widget.downcast_ref::<Switch>() {
+                switch.set_active(value == "true");
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
-                checkbox.connect_toggled(move |cb| {
+                let original_value = value == "true";
+                switch.connect_active_notify(move |sw| {
                     let mut changes = changed_options.borrow_mut();
-                    if cb.is_active().to_string() != value {
+                    if sw.is_active() != original_value {
                         changes.insert((category.clone(), name.clone()));
                     } else {
                         changes.remove(&(category.clone(), name.clone()));
@@ -2013,6 +2015,7 @@ impl ConfigWidget {
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
+                let original_value = value.clone();
                 color_button.connect_color_set(move |cb| {
                     let mut changes = changed_options.borrow_mut();
                     let new_color = cb.rgba();
@@ -2023,7 +2026,7 @@ impl ConfigWidget {
                         new_color.blue(),
                         new_color.alpha()
                     );
-                    if new_value != value {
+                    if new_value != original_value {
                         changes.insert((category.clone(), name.clone()));
                     } else {
                         changes.remove(&(category.clone(), name.clone()));
@@ -2059,8 +2062,8 @@ impl ConfigWidget {
                     spin_button.value().to_string()
                 } else if let Some(entry) = widget.downcast_ref::<Entry>() {
                     entry.text().to_string()
-                } else if let Some(checkbox) = widget.downcast_ref::<CheckButton>() {
-                    checkbox.is_active().to_string()
+                } else if let Some(switch) = widget.downcast_ref::<Switch>() {
+                    switch.is_active().to_string()
                 } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
                     let rgba = color_button.rgba();
                     config.format_color(rgba.red(), rgba.green(), rgba.blue(), rgba.alpha())
