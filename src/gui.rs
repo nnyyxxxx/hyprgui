@@ -23,7 +23,7 @@ impl ConfigGUI {
     pub fn new(app: &Application) -> Self {
         let window = ApplicationWindow::builder()
             .application(app)
-            .default_width(800)
+            .default_width(1000)
             .default_height(600)
             .build();
 
@@ -62,6 +62,7 @@ impl ConfigGUI {
         let stack = Stack::new();
         let sidebar = StackSidebar::new();
         sidebar.set_stack(&stack);
+        sidebar.set_width_request(200);
 
         self.content_box.append(&sidebar);
 
@@ -1294,7 +1295,7 @@ impl ConfigWidget {
                     &mut options,
                     "render_ahead_of_time",
                     "Render Ahead of Time",
-                    "[Warning: buggy] starts rendering before your monitor displays a frame in order to lower latency",
+                    "[Warning: buggy] starts rendering before your monitor displays a frame in order to lower latency"
                 );
                 Self::add_int_option(
                     &container,
