@@ -1599,27 +1599,33 @@ impl ConfigWidget {
         description: &str,
     ) {
         let hbox = Box::new(Orientation::Horizontal, 10);
-        hbox.set_halign(gtk::Align::Center);
+        hbox.set_margin_start(10);
+        hbox.set_margin_end(10);
+        hbox.set_margin_top(5);
+        hbox.set_margin_bottom(5);
 
-        let vbox = Box::new(Orientation::Vertical, 5);
-        let label = Label::new(Some(label));
-        label.set_halign(gtk::Align::Start);
-        vbox.append(&label);
+        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_widget = Label::new(Some(label));
+        label_widget.set_halign(gtk::Align::Start);
+        vbox.append(&label_widget);
 
         let desc_label = Label::new(Some(description));
         desc_label.set_halign(gtk::Align::Start);
         desc_label.set_opacity(0.7);
         vbox.append(&desc_label);
 
-        let entry = Entry::new();
-        entry.set_width_request(100);
+        let spin_button = gtk::SpinButton::with_range(-1000.0, 1000.0, 0.1);
+        spin_button.set_digits(2);
+        spin_button.set_halign(gtk::Align::End);
+        spin_button.set_hexpand(true);
+        spin_button.set_width_request(100);
 
         hbox.append(&vbox);
-        hbox.append(&entry);
+        hbox.append(&spin_button);
 
         container.append(&hbox);
 
-        options.insert(name.to_string(), entry.upcast());
+        options.insert(name.to_string(), spin_button.upcast());
     }
 
     fn add_string_option(
@@ -1630,12 +1636,15 @@ impl ConfigWidget {
         description: &str,
     ) {
         let hbox = Box::new(Orientation::Horizontal, 10);
-        hbox.set_halign(gtk::Align::Center);
+        hbox.set_margin_start(10);
+        hbox.set_margin_end(10);
+        hbox.set_margin_top(5);
+        hbox.set_margin_bottom(5);
 
-        let vbox = Box::new(Orientation::Vertical, 5);
-        let label = Label::new(Some(label));
-        label.set_halign(gtk::Align::Start);
-        vbox.append(&label);
+        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_widget = Label::new(Some(label));
+        label_widget.set_halign(gtk::Align::Start);
+        vbox.append(&label_widget);
 
         let desc_label = Label::new(Some(description));
         desc_label.set_halign(gtk::Align::Start);
@@ -1643,10 +1652,18 @@ impl ConfigWidget {
         vbox.append(&desc_label);
 
         let entry = Entry::new();
-        entry.set_width_request(200);
+        entry.set_halign(gtk::Align::End);
+        entry.set_hexpand(true);
+        entry.set_width_request(100);
+
+        let control_box = Box::new(Orientation::Horizontal, 5);
+        control_box.set_halign(gtk::Align::End);
+        control_box.set_hexpand(true);
+
+        control_box.append(&entry);
 
         hbox.append(&vbox);
-        hbox.append(&entry);
+        hbox.append(&control_box);
 
         container.append(&hbox);
 
