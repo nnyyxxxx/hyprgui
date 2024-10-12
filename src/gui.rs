@@ -2,8 +2,8 @@ use gtk::gdk;
 use gtk::prelude::*;
 use gtk::Switch;
 use gtk::{
-    Application, ApplicationWindow, Box, Button, ColorButton, Entry, Frame, HeaderBar, Label,
-    Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
+    Application, ApplicationWindow, Box, Button, ColorButton, Entry, Frame, HeaderBar, Image,
+    Label, Orientation, ScrolledWindow, Stack, StackSidebar, Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -1807,22 +1807,26 @@ impl ConfigWidget {
         hbox.set_margin_top(5);
         hbox.set_margin_bottom(5);
 
-        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_box = Box::new(Orientation::Horizontal, 5);
+
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
-        vbox.append(&label_widget);
 
-        let desc_label = Label::new(Some(description));
-        desc_label.set_halign(gtk::Align::Start);
-        desc_label.set_opacity(0.7);
-        vbox.append(&desc_label);
+        let tooltip_button = Button::new();
+        tooltip_button.set_tooltip_text(Some(description));
+        let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
+        tooltip_button.set_child(Some(&question_mark_icon));
+        tooltip_button.set_has_frame(false);
+
+        label_box.append(&label_widget);
+        label_box.append(&tooltip_button);
 
         let spin_button = gtk::SpinButton::with_range(-1000.0, 1000.0, 1.0);
         spin_button.set_halign(gtk::Align::End);
         spin_button.set_hexpand(true);
         spin_button.set_width_request(100);
 
-        hbox.append(&vbox);
+        hbox.append(&label_box);
         hbox.append(&spin_button);
 
         container.append(&hbox);
@@ -1843,21 +1847,25 @@ impl ConfigWidget {
         hbox.set_margin_top(5);
         hbox.set_margin_bottom(5);
 
-        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_box = Box::new(Orientation::Horizontal, 5);
+
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
-        vbox.append(&label_widget);
 
-        let desc_label = Label::new(Some(description));
-        desc_label.set_halign(gtk::Align::Start);
-        desc_label.set_opacity(0.7);
-        vbox.append(&desc_label);
+        let tooltip_button = Button::new();
+        tooltip_button.set_tooltip_text(Some(description));
+        let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
+        tooltip_button.set_child(Some(&question_mark_icon));
+        tooltip_button.set_has_frame(false);
+
+        label_box.append(&label_widget);
+        label_box.append(&tooltip_button);
 
         let switch = Switch::new();
         switch.set_halign(gtk::Align::End);
         switch.set_valign(gtk::Align::Center);
 
-        hbox.append(&vbox);
+        hbox.append(&label_box);
         hbox.append(&switch);
 
         container.append(&hbox);
@@ -1878,15 +1886,19 @@ impl ConfigWidget {
         hbox.set_margin_top(5);
         hbox.set_margin_bottom(5);
 
-        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_box = Box::new(Orientation::Horizontal, 5);
+
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
-        vbox.append(&label_widget);
 
-        let desc_label = Label::new(Some(description));
-        desc_label.set_halign(gtk::Align::Start);
-        desc_label.set_opacity(0.7);
-        vbox.append(&desc_label);
+        let tooltip_button = Button::new();
+        tooltip_button.set_tooltip_text(Some(description));
+        let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
+        tooltip_button.set_child(Some(&question_mark_icon));
+        tooltip_button.set_has_frame(false);
+
+        label_box.append(&label_widget);
+        label_box.append(&tooltip_button);
 
         let spin_button = gtk::SpinButton::with_range(-1000.0, 1000.0, 0.1);
         spin_button.set_digits(2);
@@ -1894,7 +1906,7 @@ impl ConfigWidget {
         spin_button.set_hexpand(true);
         spin_button.set_width_request(100);
 
-        hbox.append(&vbox);
+        hbox.append(&label_box);
         hbox.append(&spin_button);
 
         container.append(&hbox);
@@ -1915,15 +1927,19 @@ impl ConfigWidget {
         hbox.set_margin_top(5);
         hbox.set_margin_bottom(5);
 
-        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_box = Box::new(Orientation::Horizontal, 5);
+
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
-        vbox.append(&label_widget);
 
-        let desc_label = Label::new(Some(description));
-        desc_label.set_halign(gtk::Align::Start);
-        desc_label.set_opacity(0.7);
-        vbox.append(&desc_label);
+        let tooltip_button = Button::new();
+        tooltip_button.set_tooltip_text(Some(description));
+        let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
+        tooltip_button.set_child(Some(&question_mark_icon));
+        tooltip_button.set_has_frame(false);
+
+        label_box.append(&label_widget);
+        label_box.append(&tooltip_button);
 
         let entry = Entry::new();
         entry.set_halign(gtk::Align::End);
@@ -1936,7 +1952,7 @@ impl ConfigWidget {
 
         control_box.append(&entry);
 
-        hbox.append(&vbox);
+        hbox.append(&label_box);
         hbox.append(&control_box);
 
         container.append(&hbox);
@@ -1957,20 +1973,24 @@ impl ConfigWidget {
         hbox.set_margin_top(5);
         hbox.set_margin_bottom(5);
 
-        let vbox = Box::new(Orientation::Vertical, 2);
+        let label_box = Box::new(Orientation::Horizontal, 5);
+
         let label_widget = Label::new(Some(label));
         label_widget.set_halign(gtk::Align::Start);
-        vbox.append(&label_widget);
 
-        let desc_label = Label::new(Some(description));
-        desc_label.set_halign(gtk::Align::Start);
-        desc_label.set_opacity(0.7);
-        vbox.append(&desc_label);
+        let tooltip_button = Button::new();
+        tooltip_button.set_tooltip_text(Some(description));
+        let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
+        tooltip_button.set_child(Some(&question_mark_icon));
+        tooltip_button.set_has_frame(false);
+
+        label_box.append(&label_widget);
+        label_box.append(&tooltip_button);
 
         let color_button = ColorButton::new();
         color_button.set_halign(gtk::Align::End);
 
-        hbox.append(&vbox);
+        hbox.append(&label_box);
         hbox.append(&color_button);
 
         container.append(&hbox);
