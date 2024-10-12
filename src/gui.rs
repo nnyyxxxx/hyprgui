@@ -119,14 +119,22 @@ impl ConfigWidget {
 
         let mut options = HashMap::new();
 
+        let first_section = Rc::new(RefCell::new(true));
+
         match category {
             "general" => {
                 Self::add_section(
                     &container,
                     "General Settings",
                     "Configure general behavior.",
+                    first_section.clone(),
                 );
-                Self::add_section(&container, "Gaps", "Change gaps in & out, workspaces.");
+                Self::add_section(
+                    &container,
+                    "Gaps",
+                    "Change gaps in & out, workspaces.",
+                    first_section.clone(),
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -149,7 +157,12 @@ impl ConfigWidget {
                     "Gaps between workspaces. Stacks with gaps_out.",
                 );
 
-                Self::add_section(&container, "Borders", "Size, resize, floating...");
+                Self::add_section(
+                    &container,
+                    "Borders",
+                    "Size, resize, floating...",
+                    first_section.clone(),
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -174,7 +187,12 @@ impl ConfigWidget {
                 Self::add_int_option(&container, &mut options, "extend_border_grab_area", "Extend Border Grab Area", "Extends the area around the border where you can click and drag on, only used when general:resize_on_border is on.");
                 Self::add_bool_option(&container, &mut options, "hover_icon_on_border", "Hover Icon on Border", "Show a cursor icon when hovering over borders, only used when general:resize_on_border is on.");
 
-                Self::add_section(&container, "Colors", "Change borders colors.");
+                Self::add_section(
+                    &container,
+                    "Colors",
+                    "Change borders colors.",
+                    first_section.clone(),
+                );
                 Self::add_color_option(
                     &container,
                     &mut options,
@@ -209,6 +227,7 @@ impl ConfigWidget {
                     &container,
                     "Window Decoration",
                     "Configure window appearance.",
+                    first_section.clone(),
                 );
                 Self::add_int_option(
                     &container,
@@ -434,6 +453,7 @@ impl ConfigWidget {
                     &container,
                     "Animation Settings",
                     "Configure animation behavior.",
+                    first_section.clone(),
                 );
                 Self::add_bool_option(
                     &container,
@@ -451,11 +471,17 @@ impl ConfigWidget {
                 );
             }
             "input" => {
-                Self::add_section(&container, "Input Settings", "Configure input devices.");
+                Self::add_section(
+                    &container,
+                    "Input Settings",
+                    "Configure input devices.",
+                    first_section.clone(),
+                );
                 Self::add_section(
                     &container,
                     "Keyboard Settings",
                     "Configure keyboard behavior.",
+                    first_section.clone(),
                 );
                 Self::add_string_option(
                     &container,
@@ -528,7 +554,12 @@ impl ConfigWidget {
                     "The repeat delay.",
                 );
 
-                Self::add_section(&container, "Mouse Settings", "Configure mouse behavior.");
+                Self::add_section(
+                    &container,
+                    "Mouse Settings",
+                    "Configure mouse behavior.",
+                    first_section.clone(),
+                );
                 Self::add_float_option(
                     &container,
                     &mut options,
@@ -614,7 +645,12 @@ impl ConfigWidget {
                     "The scroll points.",
                 );
 
-                Self::add_section(&container, "Focus Settings", "Configure focus behavior.");
+                Self::add_section(
+                    &container,
+                    "Focus Settings",
+                    "Configure focus behavior.",
+                    first_section.clone(),
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -641,6 +677,7 @@ impl ConfigWidget {
                     &container,
                     "Touchpad Settings",
                     "Configure touchpad behavior.",
+                    first_section.clone(),
                 );
                 Self::add_bool_option(
                     &container,
@@ -710,6 +747,7 @@ impl ConfigWidget {
                     &container,
                     "Touchscreen Settings",
                     "Configure touchscreen behavior.",
+                    first_section.clone(),
                 );
                 Self::add_int_option(
                     &container,
@@ -733,7 +771,12 @@ impl ConfigWidget {
                     "Enables the touchdevice.",
                 );
 
-                Self::add_section(&container, "Tablet Settings", "Configure tablet behavior.");
+                Self::add_section(
+                    &container,
+                    "Tablet Settings",
+                    "Configure tablet behavior.",
+                    first_section.clone(),
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -795,6 +838,7 @@ impl ConfigWidget {
                     &container,
                     "Miscellaneous Input Settings",
                     "Other input-related settings.",
+                    first_section.clone(),
                 );
                 Self::add_int_option(
                     &container,
@@ -816,6 +860,7 @@ impl ConfigWidget {
                     &container,
                     "Gesture Settings",
                     "Configure gesture behavior.",
+                    first_section.clone(),
                 );
                 Self::add_bool_option(
                     &container,
@@ -1092,6 +1137,7 @@ impl ConfigWidget {
                     &container,
                     "Miscellaneous Settings",
                     "Configure miscellaneous behavior.",
+                    first_section.clone(),
                 );
                 Self::add_bool_option(
                     &container,
@@ -1283,6 +1329,7 @@ impl ConfigWidget {
                     &container,
                     "Bind Settings",
                     "Configure keybinding behavior.",
+                    first_section.clone(),
                 );
                 Self::add_bool_option(&container, &mut options, "pass_mouse_when_bound", "Pass Mouse When Bound", "If disabled, will not pass the mouse events to apps / dragging windows around if a keybind has been triggered.");
                 Self::add_int_option(&container, &mut options, "scroll_event_delay", "Scroll Event Delay", "In ms, how many ms to wait after a scroll event to allow passing another one for the binds.");
@@ -1300,6 +1347,7 @@ impl ConfigWidget {
                     &container,
                     "XWayland Settings",
                     "Configure XWayland behavior.",
+                    first_section.clone(),
                 );
                 Self::add_bool_option(
                     &container,
@@ -1318,12 +1366,22 @@ impl ConfigWidget {
                 );
             }
             "opengl" => {
-                Self::add_section(&container, "OpenGL Settings", "Configure OpenGL behavior.");
+                Self::add_section(
+                    &container,
+                    "OpenGL Settings",
+                    "Configure OpenGL behavior.",
+                    first_section.clone(),
+                );
                 Self::add_bool_option(&container, &mut options, "nvidia_anti_flicker", "Nvidia Anti Flicker", "Reduces flickering on nvidia at the cost of possible frame drops on lower-end GPUs.");
                 Self::add_int_option(&container, &mut options, "force_introspection", "Force Introspection", "Forces introspection at all times. Introspection is aimed at reducing GPU usage in certain cases, but might cause graphical glitches on nvidia.");
             }
             "render" => {
-                Self::add_section(&container, "Render Settings", "Configure render behavior.");
+                Self::add_section(
+                    &container,
+                    "Render Settings",
+                    "Configure render behavior.",
+                    first_section.clone(),
+                );
                 Self::add_int_option(
                     &container,
                     &mut options,
@@ -1341,7 +1399,12 @@ impl ConfigWidget {
                 Self::add_bool_option(&container, &mut options, "direct_scanout", "Direct Scanout", "Enables direct scanout. Direct scanout attempts to reduce lag when there is only one fullscreen application on a screen.");
             }
             "cursor" => {
-                Self::add_section(&container, "Cursor Settings", "Configure cursor behavior.");
+                Self::add_section(
+                    &container,
+                    "Cursor Settings",
+                    "Configure cursor behavior.",
+                    first_section.clone(),
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -1426,7 +1489,12 @@ impl ConfigWidget {
                 Self::add_bool_option(&container, &mut options, "allow_dumb_copy", "Allow Dumb Copy", "Makes HW cursors work on Nvidia, at the cost of a possible hitch whenever the image changes.");
             }
             "debug" => {
-                Self::add_section(&container, "Debug Settings", "Configure debug behavior.");
+                Self::add_section(
+                    &container,
+                    "Debug Settings",
+                    "Configure debug behavior.",
+                    first_section.clone(),
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -1518,6 +1586,7 @@ impl ConfigWidget {
                     &container,
                     &format!("{} Settings", category),
                     &format!("Configure {} behavior.", category),
+                    first_section.clone(),
                 );
             }
         }
@@ -1525,18 +1594,33 @@ impl ConfigWidget {
         ConfigWidget { container, options }
     }
 
-    fn add_section(container: &Box, title: &str, description: &str) {
+    fn add_section(
+        container: &Box,
+        title: &str,
+        description: &str,
+        first_section: Rc<RefCell<bool>>,
+    ) {
         let section_box = Box::new(Orientation::Vertical, 5);
         section_box.set_margin_top(15);
         section_box.set_margin_bottom(10);
 
         let title_label = Label::new(Some(title));
-        title_label.set_halign(gtk::Align::Start);
+        let desc_label = Label::new(Some(description));
+
+        if *first_section.borrow() {
+            title_label.set_halign(gtk::Align::Center);
+            desc_label.set_halign(gtk::Align::Center);
+            title_label.set_hexpand(true);
+            desc_label.set_hexpand(true);
+            *first_section.borrow_mut() = false;
+        } else {
+            title_label.set_halign(gtk::Align::Start);
+            desc_label.set_halign(gtk::Align::Start);
+        }
+
         title_label.set_markup(&format!("<b>{}</b>", title));
         section_box.append(&title_label);
 
-        let desc_label = Label::new(Some(description));
-        desc_label.set_halign(gtk::Align::Start);
         desc_label.set_opacity(0.7);
         section_box.append(&desc_label);
 
