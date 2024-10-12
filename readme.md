@@ -1,4 +1,4 @@
-## Hyprgui 🚀🦀
+## HyprGUI 🚀🦀
 
 - An unofficial GUI made for configuring Hyprland, built with gtk4 and rust. 🚀🦀
 - Comes with a custom-made [hyprparser](https://github.com/nnyyxxxx/hyprparser) for Hyprland's configuration file (made in rust btw). 🦀
@@ -6,6 +6,10 @@
 ---
 
 ## Installation
+
+### GitHub Releases
+
+See HyprGUI's [releases page](https://github.com/nnyyxxxx/hyprgui/releases) for downloadable binaries.
 
 ### Arch Linux
 
@@ -26,7 +30,7 @@ Or, if you're using an [AUR Helper](https://wiki.archlinux.org/title/AUR_helpers
 paru -S <package>
 ```
 
-### Building from source
+## Building from source
 
 1. Install Rust (preferably `rustup`) through your distro's package or [the official script](https://www.rust-lang.org/tools/install)
 2. Install `git`, `pango` and `gtk4`
