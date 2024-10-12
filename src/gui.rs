@@ -5,6 +5,7 @@ use gtk::{
     FileChooserDialog, FileFilter, HeaderBar, Notebook, Orientation, ResponseType,
 };
 
+#[derive(Clone)]
 pub struct ConfigGUI {
     pub window: ApplicationWindow,
     box_: Box,
@@ -93,6 +94,10 @@ impl ConfigGUI {
         });
 
         dialog.show();
+    }
+
+    pub fn load_file(&self, file_path: String) {
+        self.window.set_title(Some("ok"));
     }
 }
 

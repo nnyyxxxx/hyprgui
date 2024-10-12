@@ -19,8 +19,11 @@ fn build_ui(app: &Application) {
     let gui = ConfigGUI::new(app);
     gui.window.present();
 
-    let callback = Rc::new(RefCell::new(|filename: String| {
-        println!("Selected file: {}", filename);
+    let callback = Rc::new(RefCell::new({
+        let gui = gui.clone();
+        move |filename: String| {
+            gui.load_file(filename);
+        }
     }));
 
     gui.open_button.clone().connect_clicked(move |_| {
