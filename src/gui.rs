@@ -73,7 +73,6 @@ pub struct ConfigGUI {
     pub save_button: Button,
     content_box: Box,
     changed_options: Rc<RefCell<HashMap<(String, String), String>>>,
-    scrolled_window: ScrolledWindow,
     stack: Stack,
 }
 
@@ -104,10 +103,6 @@ impl ConfigGUI {
 
         let config_widgets = HashMap::new();
 
-        let scrolled_window = ScrolledWindow::new();
-        scrolled_window.set_hexpand(true);
-        scrolled_window.set_vexpand(true);
-
         let stack = Stack::new();
 
         ConfigGUI {
@@ -116,7 +111,6 @@ impl ConfigGUI {
             save_button,
             content_box,
             changed_options: Rc::new(RefCell::new(HashMap::new())),
-            scrolled_window,
             stack,
         }
     }
@@ -130,9 +124,7 @@ impl ConfigGUI {
         sidebar.set_width_request(200);
 
         self.content_box.append(&sidebar);
-
-        self.scrolled_window.set_child(Some(&self.stack));
-        self.content_box.append(&self.scrolled_window);
+        self.content_box.append(&self.stack);
 
         for category in &[
             "general",
@@ -146,21 +138,13 @@ impl ConfigGUI {
         ] {
             let widget = ConfigWidget::new(category);
             self.stack
-                .add_titled(&widget.container, Some(category), category);
+                .add_titled(&widget.scrolled_window, Some(category), category);
             self.config_widgets.insert(category.to_string(), widget);
         }
 
         for (category, widget) in &self.config_widgets {
             widget.load_config(config, category, self.changed_options.clone());
         }
-
-        let scrolled_window = self.scrolled_window.clone();
-        self.stack.connect_visible_child_notify(move |stack| {
-            if stack.visible_child().is_some() {
-                let adj = scrolled_window.vadjustment();
-                adj.set_value(adj.lower());
-            }
-        });
     }
 
     pub fn get_changes(&self) -> Rc<RefCell<HashMap<(String, String), String>>> {
@@ -208,17 +192,23 @@ impl ConfigGUI {
 }
 
 pub struct ConfigWidget {
-    container: Box,
     options: HashMap<String, Widget>,
+    scrolled_window: ScrolledWindow,
 }
 
 impl ConfigWidget {
     fn new(category: &str) -> Self {
+        let scrolled_window = ScrolledWindow::new();
+        scrolled_window.set_vexpand(false);
+        scrolled_window.set_propagate_natural_height(true);
+
         let container = Box::new(Orientation::Vertical, 0);
         container.set_margin_start(20);
         container.set_margin_end(20);
         container.set_margin_top(20);
         container.set_margin_bottom(20);
+
+        scrolled_window.set_child(Some(&container));
 
         let mut options = HashMap::new();
 
@@ -2053,7 +2043,10 @@ impl ConfigWidget {
             }
         }
 
-        ConfigWidget { container, options }
+        ConfigWidget {
+            options,
+            scrolled_window,
+        }
     }
 
     fn add_section(
