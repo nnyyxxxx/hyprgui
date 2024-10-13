@@ -3,7 +3,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - '**.*.rs'
+      - '**/*.rs'
       - 'src/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
