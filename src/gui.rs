@@ -153,18 +153,30 @@ impl ConfigGUI {
 
     pub fn apply_changes(&self, config: &mut HyprlandConfig) {
         let changes = self.changed_options.borrow();
-        for ((category, name), value) in changes.iter() {
-            if !value.is_empty() {
-                if name.contains(':') {
-                    let parts: Vec<&str> = name.split(':').collect();
-                    if parts.len() == 2 {
-                        config.add_entry(
-                            &format!("{}.{}", category, parts[0]),
-                            &format!("{} = {}", parts[1], value),
-                        );
+        for (category, widget) in &self.config_widgets {
+            for (name, widget) in &widget.options {
+                if let Some(value) = changes.get(&(category.to_string(), name.to_string())) {
+                    let formatted_value =
+                        if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
+                            let rgba = color_button.rgba();
+                            config.format_color(rgba.red(), rgba.green(), rgba.blue(), rgba.alpha())
+                        } else {
+                            value.clone()
+                        };
+
+                    if !formatted_value.is_empty() {
+                        if name.contains(':') {
+                            let parts: Vec<&str> = name.split(':').collect();
+                            if parts.len() == 2 {
+                                config.add_entry(
+                                    &format!("{}.{}", category, parts[0]),
+                                    &format!("{} = {}", parts[1], formatted_value),
+                                );
+                            }
+                        } else {
+                            config.add_entry(category, &format!("{} = {}", name, formatted_value));
+                        }
                     }
-                } else {
-                    config.add_entry(category, &format!("{} = {}", name, value));
                 }
             }
         }
