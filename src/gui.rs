@@ -166,7 +166,12 @@ impl ConfigGUI {
                         };
 
                     if !formatted_value.is_empty() {
-                        if name.contains(':') {
+                        if category == "layouts" {
+                            let parts: Vec<&str> = name.split(':').collect();
+                            if parts.len() == 2 {
+                                config.add_entry(parts[0], &format!("{} = {}", parts[1], formatted_value));
+                            }
+                        } else if name.contains(':') {
                             let parts: Vec<&str> = name.split(':').collect();
                             if parts.len() == 2 {
                                 config.add_entry(
