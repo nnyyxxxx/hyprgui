@@ -137,7 +137,8 @@ impl ConfigGUI {
             "layouts",
         ] {
             let widget = ConfigWidget::new(category);
-            self.stack.add_titled(&widget.scrolled_window, Some(category), category);
+            self.stack
+                .add_titled(&widget.scrolled_window, Some(category), category);
             self.config_widgets.insert(category.to_string(), widget);
         }
 
@@ -191,7 +192,6 @@ impl ConfigGUI {
 }
 
 pub struct ConfigWidget {
-    container: Box,
     options: HashMap<String, Widget>,
     scrolled_window: ScrolledWindow,
 }
@@ -2043,7 +2043,10 @@ impl ConfigWidget {
             }
         }
 
-        ConfigWidget { container, options, scrolled_window }
+        ConfigWidget {
+            options,
+            scrolled_window,
+        }
     }
 
     fn add_section(
