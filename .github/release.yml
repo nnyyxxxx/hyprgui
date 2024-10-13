@@ -1,0 +1,14 @@
+changelog:
+  categories:
+    - title: '🚀 Features'
+      labels:
+        - 'enhancement'
+    - title: '🐛 Bug Fixes'
+      labels:
+        - 'fix'
+        - 'bug'
+    - title: '📚 Documentation'
+      label: 'documentation'
+  exclude:
+    labels:
+      - 'skip-changelog'
