@@ -1,7 +1,7 @@
 ## HyprGUI 🚀🦀
 
-- An unofficial GUI made for configuring Hyprland, built with gtk4 and rust. 🚀🦀
-- Comes with a custom-made [hyprparser](https://github.com/nnyyxxxx/hyprparser) for Hyprland's configuration file (made in rust btw). 🦀
+- An unofficial GUI for configuring Hyprland, built with gtk4 and Rust. 🚀🦀
+- Comes with a custom [hyprparser](https://github.com/nnyyxxxx/hyprparser) for Hyprland's configuration file. (Rust btw) 🦀
 
 ---
 
@@ -42,7 +42,7 @@ paru -S <package>
 
 - [x] Implement GUI
 - [x] Implement parser
-- [ ] Improve readme
+- [x] Improve the readme
 - [ ] Improve parser
 - [ ] Improve GUI
 
