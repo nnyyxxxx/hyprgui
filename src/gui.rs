@@ -1,15 +1,71 @@
 use gtk::gdk;
 use gtk::prelude::*;
+use gtk::DropDown;
 use gtk::Switch;
 use gtk::{
     Application, ApplicationWindow, Box, Button, ColorButton, Entry, Frame, HeaderBar, Image,
-    Label, Orientation, Popover, ScrolledWindow, Stack, StackSidebar, Widget,
+    Label, Orientation, Popover, ScrolledWindow, Stack, StackSidebar, StringList, Widget,
 };
 
 use hyprparser::HyprlandConfig;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
+
+fn add_dropdown_option(
+    container: &Box,
+    options: &mut HashMap<String, Widget>,
+    name: &str,
+    label: &str,
+    description: &str,
+    items: &[&str],
+) {
+    let hbox = Box::new(Orientation::Horizontal, 10);
+    hbox.set_margin_start(10);
+    hbox.set_margin_end(10);
+    hbox.set_margin_top(5);
+    hbox.set_margin_bottom(5);
+
+    let label_box = Box::new(Orientation::Horizontal, 5);
+    label_box.set_hexpand(true);
+
+    let label_widget = Label::new(Some(label));
+    label_widget.set_halign(gtk::Align::Start);
+
+    let tooltip_button = Button::new();
+    let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
+    tooltip_button.set_child(Some(&question_mark_icon));
+    tooltip_button.set_has_frame(false);
+
+    let popover = Popover::new();
+    let description_label = Label::new(Some(description));
+    description_label.set_margin_top(5);
+    description_label.set_margin_bottom(5);
+    description_label.set_margin_start(5);
+    description_label.set_margin_end(5);
+    popover.set_child(Some(&description_label));
+    popover.set_position(gtk::PositionType::Right);
+
+    tooltip_button.connect_clicked(move |button| {
+        popover.set_parent(button);
+        popover.popup();
+    });
+
+    label_box.append(&label_widget);
+    label_box.append(&tooltip_button);
+
+    let string_list = StringList::new(items);
+    let dropdown = DropDown::new(Some(string_list), None::<gtk::Expression>);
+    dropdown.set_halign(gtk::Align::End);
+    dropdown.set_width_request(100);
+
+    hbox.append(&label_box);
+    hbox.append(&dropdown);
+
+    container.append(&hbox);
+
+    options.insert(name.to_string(), dropdown.upcast());
+}
 
 pub struct ConfigGUI {
     pub window: ApplicationWindow,
@@ -127,6 +183,21 @@ impl ConfigWidget {
                     "General Settings",
                     "Configure general behavior.",
                     first_section.clone(),
+                );
+
+                Self::add_section(
+                    &container,
+                    "Layout",
+                    "Choose the default layout.",
+                    first_section.clone(),
+                );
+                add_dropdown_option(
+                    &container,
+                    &mut options,
+                    "layout",
+                    "Layout",
+                    "which layout to use.",
+                    &["dwindle", "master"],
                 );
                 Self::add_section(
                     &container,
@@ -2135,6 +2206,35 @@ impl ConfigWidget {
                         changes.remove(&(category.clone(), name.clone()));
                     }
                 });
+            } else if let Some(dropdown) = widget.downcast_ref::<gtk::DropDown>() {
+                let model = dropdown.model().unwrap();
+                for i in 0..model.n_items() {
+                    if let Some(item) = model.item(i) {
+                        if let Some(string_object) = item.downcast_ref::<gtk::StringObject>() {
+                            if string_object.string() == value {
+                                dropdown.set_selected(i as u32);
+                                break;
+                            }
+                        }
+                    }
+                }
+                let category = category.to_string();
+                let name = name.to_string();
+                let changed_options = changed_options.clone();
+                let original_value = value.clone();
+                dropdown.connect_selected_notify(move |dd| {
+                    let mut changes = changed_options.borrow_mut();
+                    if let Some(selected) = dd.selected_item() {
+                        if let Some(string_object) = selected.downcast_ref::<gtk::StringObject>() {
+                            let new_value = string_object.string().to_string();
+                            if new_value != original_value {
+                                changes.insert((category.clone(), name.clone()));
+                            } else {
+                                changes.remove(&(category.clone(), name.clone()));
+                            }
+                        }
+                    }
+                });
             }
         }
     }
@@ -2170,6 +2270,14 @@ impl ConfigWidget {
                 } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
                     let rgba = color_button.rgba();
                     config.format_color(rgba.red(), rgba.green(), rgba.blue(), rgba.alpha())
+                } else if let Some(dropdown) = widget.downcast_ref::<gtk::DropDown>() {
+                    dropdown
+                        .selected_item()
+                        .and_then(|item| {
+                            item.downcast_ref::<gtk::StringObject>()
+                                .map(|s| s.string().to_string())
+                        })
+                        .unwrap_or_default()
                 } else {
                     continue;
                 };
