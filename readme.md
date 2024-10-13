@@ -26,7 +26,7 @@ cd <package>
 makepkg -si
 ```
 
-Or, if you're using an [AUR Helper](https://wiki.archlinux.org/title/AUR_helpers), it's even simpler (using [paru](https://github.com/Morganamilo/paru) for example):
+Or, if you're using an [AUR Helper](https://wiki.archlinux.org/title/AUR_helpers), it's even simpler (using [paru](https://github.com/Morganamilo/paru) as an example):
 ```bash
 paru -S <package>
 ```
