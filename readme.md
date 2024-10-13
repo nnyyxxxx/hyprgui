@@ -4,7 +4,7 @@
 An unofficial GUI for configuring Hyprland, built with GTK4 and Rust. 🚀🦀<br>
 Comes with a custom [hyprparser](https://github.com/nnyyxxxx/hyprparser) for Hyprland's configuration file. (Rust btw) 🦀
 
-![Preview](preview.png)
+![Preview](.github/preview.png)
 
 </div>
 
