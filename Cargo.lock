@@ -398,7 +398,7 @@ dependencies = [
 [[package]]
 name = "hyprparser"
 version = "0.1.0"
-source = "git+https://github.com/nnyyxxxx/hyprparser.git#4fa2ea89b9d82eac3eb033f09681c27156d1ca7d"
+source = "git+https://github.com/nnyyxxxx/hyprparser.git#8852506d57233d7d8b79ea825c7654e5a41b6337"
 
 [[package]]
 name = "indexmap"
