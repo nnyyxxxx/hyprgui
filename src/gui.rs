@@ -9,7 +9,7 @@ use gtk::{
 
 use hyprparser::HyprlandConfig;
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::rc::Rc;
 
 fn add_dropdown_option(
@@ -72,7 +72,7 @@ pub struct ConfigGUI {
     config_widgets: HashMap<String, ConfigWidget>,
     pub save_button: Button,
     content_box: Box,
-    changed_options: Rc<RefCell<HashSet<(String, String)>>>,
+    changed_options: Rc<RefCell<HashMap<(String, String), String>>>,
 }
 
 impl ConfigGUI {
@@ -107,7 +107,7 @@ impl ConfigGUI {
             config_widgets,
             save_button,
             content_box,
-            changed_options: Rc::new(RefCell::new(HashSet::new())),
+            changed_options: Rc::new(RefCell::new(HashMap::new())),
         }
     }
 
@@ -147,14 +147,38 @@ impl ConfigGUI {
         }
     }
 
-    pub fn get_changes(&self) -> Rc<RefCell<HashSet<(String, String)>>> {
+    pub fn get_changes(&self) -> Rc<RefCell<HashMap<(String, String), String>>> {
         self.changed_options.clone()
     }
 
     pub fn apply_changes(&self, config: &mut HyprlandConfig) {
         let changes = self.changed_options.borrow();
         for (category, widget) in &self.config_widgets {
-            widget.apply_changes(config, category, &changes);
+            for (name, widget) in &widget.options {
+                if let Some(value) = changes.get(&(category.to_string(), name.to_string())) {
+                    let formatted_value =
+                        if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
+                            let rgba = color_button.rgba();
+                            config.format_color(rgba.red(), rgba.green(), rgba.blue(), rgba.alpha())
+                        } else {
+                            value.clone()
+                        };
+
+                    if !formatted_value.is_empty() {
+                        if name.contains(':') {
+                            let parts: Vec<&str> = name.split(':').collect();
+                            if parts.len() == 2 {
+                                config.add_entry(
+                                    &format!("{}.{}", category, parts[0]),
+                                    &format!("{} = {}", parts[1], formatted_value),
+                                );
+                            }
+                        } else {
+                            config.add_entry(category, &format!("{} = {}", name, formatted_value));
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -2135,7 +2159,7 @@ impl ConfigWidget {
         &self,
         config: &HyprlandConfig,
         category: &str,
-        changed_options: Rc<RefCell<HashSet<(String, String)>>>,
+        changed_options: Rc<RefCell<HashMap<(String, String), String>>>,
     ) {
         for (name, widget) in &self.options {
             let value = self.extract_value(config, category, name);
@@ -2145,42 +2169,30 @@ impl ConfigWidget {
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
-                let original_value = value.clone();
                 spin_button.connect_value_changed(move |sb| {
                     let mut changes = changed_options.borrow_mut();
-                    if sb.value().to_string() != original_value {
-                        changes.insert((category.clone(), name.clone()));
-                    } else {
-                        changes.remove(&(category.clone(), name.clone()));
-                    }
+                    let new_value = sb.value().to_string();
+                    changes.insert((category.clone(), name.clone()), new_value);
                 });
             } else if let Some(entry) = widget.downcast_ref::<Entry>() {
                 entry.set_text(&value);
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
-                let original_value = value.clone();
                 entry.connect_changed(move |entry| {
                     let mut changes = changed_options.borrow_mut();
-                    if entry.text() != original_value {
-                        changes.insert((category.clone(), name.clone()));
-                    } else {
-                        changes.remove(&(category.clone(), name.clone()));
-                    }
+                    let new_value = entry.text().to_string();
+                    changes.insert((category.clone(), name.clone()), new_value);
                 });
             } else if let Some(switch) = widget.downcast_ref::<Switch>() {
                 switch.set_active(value == "true");
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
-                let original_value = value == "true";
                 switch.connect_active_notify(move |sw| {
                     let mut changes = changed_options.borrow_mut();
-                    if sw.is_active() != original_value {
-                        changes.insert((category.clone(), name.clone()));
-                    } else {
-                        changes.remove(&(category.clone(), name.clone()));
-                    }
+                    let new_value = sw.is_active().to_string();
+                    changes.insert((category.clone(), name.clone()), new_value);
                 });
             } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
                 if let Some((red, green, blue, alpha)) = config.parse_color(&value) {
@@ -2189,7 +2201,6 @@ impl ConfigWidget {
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
-                let original_value = value.clone();
                 color_button.connect_color_set(move |cb| {
                     let mut changes = changed_options.borrow_mut();
                     let new_color = cb.rgba();
@@ -2200,11 +2211,7 @@ impl ConfigWidget {
                         new_color.blue(),
                         new_color.alpha()
                     );
-                    if new_value != original_value {
-                        changes.insert((category.clone(), name.clone()));
-                    } else {
-                        changes.remove(&(category.clone(), name.clone()));
-                    }
+                    changes.insert((category.clone(), name.clone()), new_value);
                 });
             } else if let Some(dropdown) = widget.downcast_ref::<gtk::DropDown>() {
                 let model = dropdown.model().unwrap();
@@ -2212,7 +2219,7 @@ impl ConfigWidget {
                     if let Some(item) = model.item(i) {
                         if let Some(string_object) = item.downcast_ref::<gtk::StringObject>() {
                             if string_object.string() == value {
-                                dropdown.set_selected(i as u32);
+                                dropdown.set_selected(i);
                                 break;
                             }
                         }
@@ -2221,17 +2228,12 @@ impl ConfigWidget {
                 let category = category.to_string();
                 let name = name.to_string();
                 let changed_options = changed_options.clone();
-                let original_value = value.clone();
                 dropdown.connect_selected_notify(move |dd| {
                     let mut changes = changed_options.borrow_mut();
                     if let Some(selected) = dd.selected_item() {
                         if let Some(string_object) = selected.downcast_ref::<gtk::StringObject>() {
                             let new_value = string_object.string().to_string();
-                            if new_value != original_value {
-                                changes.insert((category.clone(), name.clone()));
-                            } else {
-                                changes.remove(&(category.clone(), name.clone()));
-                            }
+                            changes.insert((category.clone(), name.clone()), new_value);
                         }
                     }
                 });
@@ -2251,51 +2253,5 @@ impl ConfigWidget {
             }
         }
         String::new()
-    }
-
-    fn apply_changes(
-        &self,
-        config: &mut HyprlandConfig,
-        category: &str,
-        changes: &HashSet<(String, String)>,
-    ) {
-        for (name, widget) in &self.options {
-            if changes.contains(&(category.to_string(), name.to_string())) {
-                let value = if let Some(spin_button) = widget.downcast_ref::<gtk::SpinButton>() {
-                    spin_button.value().to_string()
-                } else if let Some(entry) = widget.downcast_ref::<Entry>() {
-                    entry.text().to_string()
-                } else if let Some(switch) = widget.downcast_ref::<Switch>() {
-                    switch.is_active().to_string()
-                } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
-                    let rgba = color_button.rgba();
-                    config.format_color(rgba.red(), rgba.green(), rgba.blue(), rgba.alpha())
-                } else if let Some(dropdown) = widget.downcast_ref::<gtk::DropDown>() {
-                    dropdown
-                        .selected_item()
-                        .and_then(|item| {
-                            item.downcast_ref::<gtk::StringObject>()
-                                .map(|s| s.string().to_string())
-                        })
-                        .unwrap_or_default()
-                } else {
-                    continue;
-                };
-
-                if !value.is_empty() {
-                    if name.contains(':') {
-                        let parts: Vec<&str> = name.split(':').collect();
-                        if parts.len() == 2 {
-                            config.add_entry(
-                                &format!("{}.{}", category, parts[0]),
-                                &format!("{} = {}", parts[1], value),
-                            );
-                        }
-                    } else {
-                        config.add_entry(category, &format!("{} = {}", name, value));
-                    }
-                }
-            }
-        }
     }
 }
