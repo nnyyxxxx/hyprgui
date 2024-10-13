@@ -136,6 +136,7 @@ impl ConfigGUI {
             "gestures",
             "misc",
             "binds",
+            "layouts",
         ] {
             let widget = ConfigWidget::new(category);
             stack.add_titled(&widget.container, Some(category), category);
@@ -1838,6 +1839,163 @@ impl ConfigWidget {
                     "colored_stdout_logs",
                     "Colored Stdout Logs",
                     "Enables colors in the stdout logs.",
+                );
+            }
+            "layouts" => {
+                Self::add_section(
+                    &container,
+                    "Layout Settings",
+                    "Configure layout behavior.",
+                    first_section.clone(),
+                );
+
+                Self::add_section(
+                    &container,
+                    "Dwindle Layout",
+                    "Configure Dwindle layout settings.",
+                    first_section.clone(),
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "dwindle:pseudotile",
+                    "Pseudotile",
+                    "Enable pseudotiling. Pseudotiled windows retain their floating size when tiled.",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "dwindle:force_split",
+                    "Force Split",
+                    "0 -> split follows mouse, 1 -> always split to the left (new = left or top) 2 -> always split to the right (new = right or bottom)",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "dwindle:preserve_split",
+                    "Preserve Split",
+                    "If enabled, the split (side/top) will not change regardless of what happens to the container.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "dwindle:smart_split",
+                    "Smart Split",
+                    "If enabled, allows a more precise control over the window split direction based on the cursor's position.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "dwindle:smart_resizing",
+                    "Smart Resizing",
+                    "If enabled, resizing direction will be determined by the mouse's position on the window.",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "dwindle:permanent_direction_override",
+                    "Permanent Direction Override",
+                    "If enabled, makes the preselect direction persist until changed or disabled.",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "dwindle:special_scale_factor",
+                    "Special Scale Factor",
+                    "Specifies the scale factor of windows on the special workspace [0 - 1]",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "dwindle:split_width_multiplier",
+                    "Split Width Multiplier",
+                    "Specifies the auto-split width multiplier",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "dwindle:use_active_for_splits",
+                    "Use Active for Splits",
+                    "Whether to prefer the active window or the mouse position for splits",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "dwindle:default_split_ratio",
+                    "Default Split Ratio",
+                    "The default split ratio on window open. 1 means even 50/50 split. [0.1 - 1.9]",
+                );
+                Self::add_int_option(
+                    &container,
+                    &mut options,
+                    "dwindle:split_bias",
+                    "Split Bias",
+                    "Specifies which window will receive the larger half of a split. [0/1/2]",
+                );
+
+                Self::add_section(
+                    &container,
+                    "Master Layout",
+                    "Configure Master layout settings.",
+                    first_section.clone(),
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "master:allow_small_split",
+                    "Allow Small Split",
+                    "Enable adding additional master windows in a horizontal split style",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "master:special_scale_factor",
+                    "Special Scale Factor",
+                    "The scale of the special workspace windows. [0.0 - 1.0]",
+                );
+                Self::add_float_option(
+                    &container,
+                    &mut options,
+                    "master:mfact",
+                    "Master Factor",
+                    "The size as a percentage of the master window. [0.0 - 1.0]",
+                );
+                add_dropdown_option(
+                    &container,
+                    &mut options,
+                    "master:new_is_master",
+                    "New Window Status",
+                    "Determines if a new window becomes the new master.",
+                    &["true", "false"],
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "master:new_on_top",
+                    "New on Top",
+                    "Whether a newly open window should be on the top of the stack",
+                );
+                add_dropdown_option(
+                    &container,
+                    &mut options,
+                    "master:orientation",
+                    "Orientation",
+                    "Default placement of the master area",
+                    &["left", "right", "top", "bottom", "center"],
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "master:inherit_fullscreen",
+                    "Inherit Fullscreen",
+                    "Inherit fullscreen status when cycling/swapping to another window",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "master:always_center_master",
+                    "Always Center Master",
+                    "Keep the master window centered when using center orientation",
                 );
             }
             _ => {
