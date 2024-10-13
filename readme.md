@@ -1,6 +1,6 @@
 ## HyprGUI 🚀🦀
 
-- An unofficial GUI for configuring Hyprland, built with gtk4 and Rust. 🚀🦀
+- An unofficial GUI for configuring Hyprland, built with GTK4 and Rust. 🚀🦀
 - Comes with a custom [hyprparser](https://github.com/nnyyxxxx/hyprparser) for Hyprland's configuration file. (Rust btw) 🦀
 
 ---
@@ -51,5 +51,5 @@ paru -S <package>
 - [Nyx](https://github.com/nnyyxxxx) - Implementing the parser, rest of the GUI, and maintaining the project
 - [Adam](https://github.com/adamperkowski) - Implementing the base GUI, maintaining the AUR packgages and the project alongside myself
 - [Vaxry](https://github.com/vaxerski) - Hyprland
-- [rust-gtk](https://github.com/gtk-rs/gtk4-rs) - gtk4 implementation
+- [rust-gtk](https://github.com/gtk-rs/gtk4-rs) - The GTK4 library
 - [Hyprland](https://github.com/hyprwm/Hyprland) - The window manager
