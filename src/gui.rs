@@ -2127,7 +2127,7 @@ impl ConfigWidget {
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
 
-        let spin_button = gtk::SpinButton::with_range(-1000.0, 1000.0, 1.0);
+        let spin_button = gtk::SpinButton::with_range(0.0, 1000.0, 1.0);
         spin_button.set_halign(gtk::Align::End);
         spin_button.set_width_request(100);
 
@@ -2233,7 +2233,7 @@ impl ConfigWidget {
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
 
-        let spin_button = gtk::SpinButton::with_range(-1000.0, 1000.0, 0.1);
+        let spin_button = gtk::SpinButton::with_range(0.0, 1000.0, 0.1);
         spin_button.set_digits(2);
         spin_button.set_halign(gtk::Align::End);
         spin_button.set_width_request(100);
