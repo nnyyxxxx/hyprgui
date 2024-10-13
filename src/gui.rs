@@ -1968,10 +1968,10 @@ impl ConfigWidget {
                 add_dropdown_option(
                     &container,
                     &mut options,
-                    "master:new_is_master",
+                    "master:new_status",
                     "New Window Status",
-                    "Determines if a new window becomes the new master.",
-                    &["true", "false"],
+                    "Determines how new windows are added to the layout.",
+                    &["master", "slave", "inherit"],
                 );
                 Self::add_bool_option(
                     &container,
@@ -1979,6 +1979,14 @@ impl ConfigWidget {
                     "master:new_on_top",
                     "New on Top",
                     "Whether a newly open window should be on the top of the stack",
+                );
+                add_dropdown_option(
+                    &container,
+                    &mut options,
+                    "master:new_on_active",
+                    "New on Active",
+                    "Place new window relative to the focused window",
+                    &["before", "after", "none"],
                 );
                 add_dropdown_option(
                     &container,
@@ -2001,6 +2009,20 @@ impl ConfigWidget {
                     "master:always_center_master",
                     "Always Center Master",
                     "Keep the master window centered when using center orientation",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "master:smart_resizing",
+                    "Smart Resizing",
+                    "If enabled, resizing direction will be determined by the mouse's position on the window",
+                );
+                Self::add_bool_option(
+                    &container,
+                    &mut options,
+                    "master:drop_at_cursor",
+                    "Drop at Cursor",
+                    "When enabled, dragging and dropping windows will put them at the cursor position",
                 );
             }
             _ => {
