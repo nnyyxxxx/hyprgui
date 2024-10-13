@@ -2207,7 +2207,7 @@ impl ConfigWidget {
                     if let Some(item) = model.item(i) {
                         if let Some(string_object) = item.downcast_ref::<gtk::StringObject>() {
                             if string_object.string() == value {
-                                dropdown.set_selected(i as u32);
+                                dropdown.set_selected(i);
                                 break;
                             }
                         }
