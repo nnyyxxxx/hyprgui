@@ -1,11 +1,7 @@
-use gtk::gdk;
-use gtk::prelude::*;
-use gtk::DropDown;
-use gtk::SpinButton;
-use gtk::Switch;
 use gtk::{
-    Application, ApplicationWindow, Box, Button, ColorButton, Entry, Frame, HeaderBar, Image,
-    Label, Orientation, Popover, ScrolledWindow, Stack, StackSidebar, StringList, Widget,
+    gdk, prelude::*, Application, ApplicationWindow, Box, Button, ColorButton, DropDown, Entry,
+    Frame, HeaderBar, Image, Label, MessageDialog, Orientation, Popover, ScrolledWindow,
+    SpinButton, Stack, StackSidebar, StringList, Switch, Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -120,6 +116,54 @@ impl ConfigGUI {
             stack,
             sidebar,
         }
+    }
+
+    pub fn custom_info_popup(&mut self, title: &str, text: &str, modal: bool) {
+        let dialog = MessageDialog::builder()
+            .message_type(gtk::MessageType::Info)
+            .buttons(gtk::ButtonsType::Ok)
+            .title(title)
+            .text(text)
+            .modal(modal)
+            .build();
+
+        dialog.connect_response(|dialog, _| {
+            dialog.close();
+        });
+
+        dialog.show();
+    }
+
+    pub fn custom_error_popup(&mut self, title: &str, text: &str, modal: bool) {
+        let dialog = MessageDialog::builder()
+            .message_type(gtk::MessageType::Error)
+            .buttons(gtk::ButtonsType::Ok)
+            .title(title)
+            .text(text)
+            .modal(modal)
+            .build();
+
+        dialog.connect_response(|dialog, _| {
+            dialog.close();
+        });
+
+        dialog.show();
+    }
+
+    pub fn custom_error_popup_critical(&mut self, title: &str, text: &str, modal: bool) {
+        let dialog = MessageDialog::builder()
+            .message_type(gtk::MessageType::Error)
+            .buttons(gtk::ButtonsType::Ok)
+            .title(title)
+            .text(text)
+            .modal(modal)
+            .build();
+
+        dialog.connect_response(|_, _| {
+            std::process::exit(1);
+        });
+
+        dialog.show();
     }
 
     pub fn load_config(&mut self, config: &HyprlandConfig) {
