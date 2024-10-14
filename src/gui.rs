@@ -91,7 +91,7 @@ impl ConfigGUI {
             .build();
 
         let save_button = Button::with_label("Save");
-        header_bar.pack_start(&save_button);
+        header_bar.pack_end(&save_button);
 
         window.set_titlebar(Some(&header_bar));
 
