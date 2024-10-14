@@ -163,7 +163,7 @@ impl ConfigGUI {
         }
 
         for (_, category) in &categories {
-            if let Some(widget) = self.config_widgets.get(&category.to_string()) {
+            if let Some(widget) = self.config_widgets.get(*category) {
                 widget.load_config(config, category, self.changed_options.clone());
             }
         }
