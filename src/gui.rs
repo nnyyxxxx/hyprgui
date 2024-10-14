@@ -123,6 +123,21 @@ impl ConfigGUI {
         }
     }
 
+    pub fn custom_info_popup(&mut self, title: &str, text: &str) {
+        let dialog = MessageDialog::builder()
+            .message_type(gtk::MessageType::Info)
+            .buttons(gtk::ButtonsType::Ok)
+            .title(title)
+            .text(text)
+            .build();
+
+        dialog.connect_response(|dialog, _| {
+            dialog.close();
+        });
+
+        dialog.show();
+    }
+
     pub fn file_not_found(&mut self, file: String) {
         let dialog = MessageDialog::builder()
             .message_type(gtk::MessageType::Error)
