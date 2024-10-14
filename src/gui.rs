@@ -209,72 +209,58 @@ impl ConfigGUI {
     }
 }
 
-fn get_option_limits(category: &str, name: &str, description: &str) -> (f64, f64, f64) {
-    match (category, name) {
-        ("general", "border_size") => (0.0, 10.0, 1.0),
-        ("general", "gaps_in" | "gaps_out" | "gaps_workspaces") => (0.0, 50.0, 1.0),
-        ("general", "resize_corner") => (0.0, 4.0, 1.0),
-
-        ("decoration", "rounding") => (0.0, 20.0, 1.0),
-        ("decoration", "active_opacity" | "inactive_opacity" | "fullscreen_opacity") => {
-            (0.0, 1.0, 0.1)
-        }
-        ("decoration", "shadow_range") => (0.0, 50.0, 1.0),
-        ("decoration", "shadow_render_power") => (1.0, 4.0, 1.0),
-        ("decoration", "shadow_scale") => (0.0, 1.0, 0.1),
-        ("decoration", "dim_strength") => (0.0, 1.0, 0.1),
-        ("decoration", "dim_special") => (0.0, 1.0, 0.1),
-        ("decoration", "dim_around") => (0.0, 1.0, 0.1),
-
-        ("decoration:blur", "size") => (1.0, 20.0, 1.0),
-        ("decoration:blur", "passes") => (1.0, 10.0, 1.0),
-        ("decoration:blur", "noise") => (0.0, 1.0, 0.01),
-        ("decoration:blur", "contrast") => (0.0, 2.0, 0.1),
-        ("decoration:blur", "brightness") => (0.0, 2.0, 0.1),
-        ("decoration:blur", "vibrancy") => (0.0, 1.0, 0.1),
-        ("decoration:blur", "vibrancy_darkness") => (0.0, 1.0, 0.1),
-        ("decoration:blur", "popups_ignorealpha") => (0.0, 1.0, 0.1),
-
-        ("input", "sensitivity") => (-1.0, 1.0, 0.1),
-        ("input", "scroll_button") => (0.0, 9.0, 1.0),
-        ("input", "scroll_factor") => (0.1, 10.0, 0.1),
-        ("input", "follow_mouse") => (0.0, 3.0, 1.0),
-        ("input", "float_switch_override_focus") => (0.0, 2.0, 1.0),
-
-        ("gestures", "workspace_swipe_fingers") => (2.0, 5.0, 1.0),
-        ("gestures", "workspace_swipe_distance") => (100.0, 500.0, 10.0),
-        ("gestures", "workspace_swipe_min_speed_to_force") => (0.0, 100.0, 1.0),
-        ("gestures", "workspace_swipe_cancel_ratio") => (0.0, 1.0, 0.1),
-        ("gestures", "workspace_swipe_direction_lock_threshold") => (0.0, 50.0, 1.0),
-
-        ("group", "drag_into_group") => (0.0, 2.0, 1.0),
-
-        ("misc", "force_default_wallpaper") => (-1.0, 2.0, 1.0),
-        ("misc", "vrr") => (0.0, 2.0, 1.0),
-        ("misc", "render_ahead_safezone") => (0.0, 10.0, 1.0),
-        ("misc", "new_window_takes_over_fullscreen") => (0.0, 2.0, 1.0),
-        ("misc", "initial_workspace_tracking") => (0.0, 2.0, 1.0),
-        ("misc", "render_unfocused_fps") => (1.0, 60.0, 1.0),
-
-        ("binds", "scroll_event_delay") => (0.0, 1000.0, 10.0),
-        ("binds", "workspace_center_on") => (0.0, 1.0, 1.0),
-        ("binds", "focus_preferred_method") => (0.0, 1.0, 1.0),
-
-        ("opengl", "force_introspection") => (0.0, 2.0, 1.0),
-
-        ("render", "explicit_sync") => (0.0, 2.0, 1.0),
-        ("render", "explicit_sync_kms") => (0.0, 2.0, 1.0),
-
-        ("cursor", "min_refresh_rate") => (1.0, 240.0, 1.0),
-        ("cursor", "hotspot_padding") => (0.0, 10.0, 1.0),
-        ("cursor", "inactive_timeout") => (0.0, 60.0, 1.0),
-        ("cursor", "zoom_factor") => (1.0, 5.0, 0.1),
-
-        ("debug", "damage_tracking") => (0.0, 2.0, 1.0),
-        ("debug", "watchdog_timeout") => (0.0, 60.0, 1.0),
-        ("debug", "error_limit") => (1.0, 100.0, 1.0),
-        ("debug", "error_position") => (0.0, 1.0, 1.0),
-
+fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
+    match name {
+        "border_size" => (0.0, 10.0, 1.0),
+        "gaps_in" | "gaps_out" | "gaps_workspaces" => (0.0, 50.0, 1.0),
+        "resize_corner" => (0.0, 4.0, 1.0),
+        "rounding" => (0.0, 20.0, 1.0),
+        "active_opacity" | "inactive_opacity" | "fullscreen_opacity" => (0.0, 1.0, 0.1),
+        "shadow_range" => (0.0, 50.0, 1.0),
+        "shadow_render_power" => (1.0, 4.0, 1.0),
+        "shadow_scale" => (0.0, 1.0, 0.1),
+        "dim_strength" => (0.0, 1.0, 0.1),
+        "dim_special" => (0.0, 1.0, 0.1),
+        "dim_around" => (0.0, 1.0, 0.1),
+        "size" => (1.0, 20.0, 1.0),
+        "passes" => (1.0, 10.0, 1.0),
+        "noise" => (0.0, 1.0, 0.01),
+        "contrast" => (0.0, 2.0, 0.1),
+        "brightness" => (0.0, 2.0, 0.1),
+        "vibrancy" => (0.0, 1.0, 0.1),
+        "vibrancy_darkness" => (0.0, 1.0, 0.1),
+        "popups_ignorealpha" => (0.0, 1.0, 0.1),
+        "sensitivity" => (-1.0, 1.0, 0.1),
+        "scroll_button" => (0.0, 9.0, 1.0),
+        "scroll_factor" => (0.1, 10.0, 0.1),
+        "follow_mouse" => (0.0, 3.0, 1.0),
+        "float_switch_override_focus" => (0.0, 2.0, 1.0),
+        "workspace_swipe_fingers" => (2.0, 5.0, 1.0),
+        "workspace_swipe_distance" => (100.0, 500.0, 10.0),
+        "workspace_swipe_min_speed_to_force" => (0.0, 100.0, 1.0),
+        "workspace_swipe_cancel_ratio" => (0.0, 1.0, 0.1),
+        "workspace_swipe_direction_lock_threshold" => (0.0, 50.0, 1.0),
+        "drag_into_group" => (0.0, 2.0, 1.0),
+        "force_default_wallpaper" => (-1.0, 2.0, 1.0),
+        "vrr" => (0.0, 2.0, 1.0),
+        "render_ahead_safezone" => (0.0, 10.0, 1.0),
+        "new_window_takes_over_fullscreen" => (0.0, 2.0, 1.0),
+        "initial_workspace_tracking" => (0.0, 2.0, 1.0),
+        "render_unfocused_fps" => (1.0, 60.0, 1.0),
+        "scroll_event_delay" => (0.0, 1000.0, 10.0),
+        "workspace_center_on" => (0.0, 1.0, 1.0),
+        "focus_preferred_method" => (0.0, 1.0, 1.0),
+        "force_introspection" => (0.0, 2.0, 1.0),
+        "explicit_sync" => (0.0, 2.0, 1.0),
+        "explicit_sync_kms" => (0.0, 2.0, 1.0),
+        "min_refresh_rate" => (1.0, 240.0, 1.0),
+        "hotspot_padding" => (0.0, 10.0, 1.0),
+        "inactive_timeout" => (0.0, 60.0, 1.0),
+        "zoom_factor" => (1.0, 5.0, 0.1),
+        "damage_tracking" => (0.0, 2.0, 1.0),
+        "watchdog_timeout" => (0.0, 60.0, 1.0),
+        "error_limit" => (1.0, 100.0, 1.0),
+        "error_position" => (0.0, 1.0, 1.0),
         _ => {
             if description.contains("[0.0 - 1.0]") {
                 (0.0, 1.0, 0.1)
@@ -2207,7 +2193,7 @@ impl ConfigWidget {
     fn add_int_option(
         container: &Box,
         options: &mut HashMap<String, Widget>,
-        full_name: &str,
+        name: &str,
         label: &str,
         description: &str,
     ) {
@@ -2245,9 +2231,7 @@ impl ConfigWidget {
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
 
-        let parts: Vec<&str> = full_name.split(':').collect();
-        let (category, name) = (parts[0], parts[1]);
-        let (min, max, step) = get_option_limits(category, name, description);
+        let (min, max, step) = get_option_limits(name, description);
         let spin_button = SpinButton::with_range(min, max, step);
         spin_button.set_digits(0);
         spin_button.set_halign(gtk::Align::End);
@@ -2258,7 +2242,7 @@ impl ConfigWidget {
 
         container.append(&hbox);
 
-        options.insert(full_name.to_string(), spin_button.upcast());
+        options.insert(name.to_string(), spin_button.upcast());
     }
 
     fn add_bool_option(
@@ -2317,7 +2301,7 @@ impl ConfigWidget {
     fn add_float_option(
         container: &Box,
         options: &mut HashMap<String, Widget>,
-        full_name: &str,
+        name: &str,
         label: &str,
         description: &str,
     ) {
@@ -2355,9 +2339,7 @@ impl ConfigWidget {
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
 
-        let parts: Vec<&str> = full_name.split(':').collect();
-        let (category, name) = (parts[0], parts[1]);
-        let (min, max, step) = get_option_limits(category, name, description);
+        let (min, max, step) = get_option_limits(name, description);
         let spin_button = SpinButton::with_range(min, max, step);
         spin_button.set_digits(2);
         spin_button.set_halign(gtk::Align::End);
@@ -2368,7 +2350,7 @@ impl ConfigWidget {
 
         container.append(&hbox);
 
-        options.insert(full_name.to_string(), spin_button.upcast());
+        options.insert(name.to_string(), spin_button.upcast());
     }
 
     fn add_string_option(
