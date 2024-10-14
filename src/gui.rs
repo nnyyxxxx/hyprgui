@@ -138,6 +138,21 @@ impl ConfigGUI {
         dialog.show();
     }
 
+    pub fn saving_failed(&mut self, error: std::io::Error) {
+        let dialog = MessageDialog::builder()
+            .message_type(gtk::MessageType::Error)
+            .buttons(gtk::ButtonsType::Ok)
+            .title("Saving failed")
+            .text(format!("Failed to save the configuration: {}", error))
+            .build();
+
+        dialog.connect_response(|dialog, _| {
+            dialog.close();
+        });
+
+        dialog.show();
+    }
+
     pub fn load_config(&mut self, config: &HyprlandConfig) {
         self.config_widgets.clear();
         self.content_box.set_visible(true);

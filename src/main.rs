@@ -3,6 +3,7 @@ use gtk::Application;
 use hyprparser::parse_config;
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 use std::{cell::RefCell, env, rc::Rc};
 
 mod gui;
@@ -21,8 +22,7 @@ fn main() {
 fn build_ui(app: &Application) {
     let gui = Rc::new(RefCell::new(gui::ConfigGUI::new(app)));
 
-    let config_path_full =
-        Path::new(&env::var("HOME").unwrap_or_else(|_| ".".to_string())).join(CONFIG_PATH);
+    let config_path_full = get_config_path();
 
     if !config_path_full.exists() {
         gui.borrow_mut()
@@ -42,8 +42,8 @@ fn build_ui(app: &Application) {
 }
 
 fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
-    let gui_ref = gui.borrow();
-    let path = CONFIG_PATH.replace("~", &env::var("HOME").unwrap());
+    let mut gui_ref = gui.borrow_mut();
+    let path = get_config_path();
     let config_str = fs::read_to_string(&path).expect("Failed to read configuration file");
 
     let mut parsed_config = parse_config(&config_str);
@@ -55,10 +55,16 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
         let updated_config_str = parsed_config.to_string();
 
         match fs::write(&path, updated_config_str) {
-            Ok(_) => println!("Configuration saved to: {}", path),
-            Err(e) => eprintln!("Error saving configuration: {}", e),
+            Ok(_) => println!("Configuration saved to: ~/{}", CONFIG_PATH),
+            Err(e) => {
+                gui_ref.saving_failed(e);
+            }
         }
     } else {
         println!("No changes to save.");
     }
+}
+
+fn get_config_path() -> PathBuf {
+    Path::new(&env::var("HOME").unwrap_or_else(|_| ".".to_string())).join(CONFIG_PATH)
 }
