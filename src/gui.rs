@@ -268,8 +268,6 @@ fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
                 (0.0, 2.0, 1.0)
             } else if name.contains("opacity") || name.contains("ratio") {
                 (0.0, 1.0, 0.1)
-            } else if name.contains("size") || name.contains("distance") {
-                (0.0, 1000.0, 1.0)
             } else {
                 (0.0, 1000.0, 1.0)
             }
