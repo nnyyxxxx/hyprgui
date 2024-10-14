@@ -305,15 +305,28 @@ fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
         "watchdog_timeout" => (0.0, 60.0, 1.0),
         "error_limit" => (1.0, 100.0, 1.0),
         "error_position" => (0.0, 1.0, 1.0),
+        "repeat_rate" => (1.0, 100.0, 1.0),
+        "repeat_delay" => (100.0, 2000.0, 100.0),
+        "touchpad:scroll_factor" => (0.1, 10.0, 0.1),
+        "tablet:transform" => (0.0, 7.0, 1.0),
+        "off_window_axis_events" => (0.0, 3.0, 1.0),
+        "emulate_discrete_scroll" => (0.0, 2.0, 1.0),
+        "focus_on_close" => (0.0, 1.0, 1.0),
+        "groupbar:font_size" => (6.0, 32.0, 1.0),
+        "groupbar:height" => (10.0, 50.0, 1.0),
+        "groupbar:priority" => (0.0, 10.0, 1.0),
+        "manual_crash" => (0.0, 1.0, 1.0),
         _ => {
             if description.contains("[0.0 - 1.0]") {
                 (0.0, 1.0, 0.1)
-            } else if description.contains("[0/1]") || description.contains("[0/1/2]") {
+            } else if description.contains("[0/1]") {
+                (0.0, 1.0, 1.0)
+            } else if description.contains("[0/1/2]") {
                 (0.0, 2.0, 1.0)
             } else if name.contains("opacity") || name.contains("ratio") {
                 (0.0, 1.0, 0.1)
             } else {
-                (0.0, 1000.0, 1.0)
+                (0.0, 50.0, 1.0)
             }
         }
     }
