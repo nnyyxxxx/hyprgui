@@ -1,6 +1,7 @@
 use gtk::gdk;
 use gtk::prelude::*;
 use gtk::DropDown;
+use gtk::SpinButton;
 use gtk::Switch;
 use gtk::{
     Application, ApplicationWindow, Box, Button, ColorButton, Entry, Frame, HeaderBar, Image,
@@ -2206,8 +2207,7 @@ impl ConfigWidget {
     fn add_int_option(
         container: &Box,
         options: &mut HashMap<String, Widget>,
-        category: &str,
-        name: &str,
+        full_name: &str,
         label: &str,
         description: &str,
     ) {
@@ -2245,6 +2245,8 @@ impl ConfigWidget {
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
 
+        let parts: Vec<&str> = full_name.split(':').collect();
+        let (category, name) = (parts[0], parts[1]);
         let (min, max, step) = get_option_limits(category, name, description);
         let spin_button = SpinButton::with_range(min, max, step);
         spin_button.set_digits(0);
@@ -2256,7 +2258,7 @@ impl ConfigWidget {
 
         container.append(&hbox);
 
-        options.insert(name.to_string(), spin_button.upcast());
+        options.insert(full_name.to_string(), spin_button.upcast());
     }
 
     fn add_bool_option(
@@ -2315,8 +2317,7 @@ impl ConfigWidget {
     fn add_float_option(
         container: &Box,
         options: &mut HashMap<String, Widget>,
-        category: &str,
-        name: &str,
+        full_name: &str,
         label: &str,
         description: &str,
     ) {
@@ -2354,6 +2355,8 @@ impl ConfigWidget {
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
 
+        let parts: Vec<&str> = full_name.split(':').collect();
+        let (category, name) = (parts[0], parts[1]);
         let (min, max, step) = get_option_limits(category, name, description);
         let spin_button = SpinButton::with_range(min, max, step);
         spin_button.set_digits(2);
@@ -2365,7 +2368,7 @@ impl ConfigWidget {
 
         container.append(&hbox);
 
-        options.insert(name.to_string(), spin_button.upcast());
+        options.insert(full_name.to_string(), spin_button.upcast());
     }
 
     fn add_string_option(
