@@ -74,6 +74,7 @@ pub struct ConfigGUI {
     content_box: Box,
     changed_options: Rc<RefCell<HashMap<(String, String), String>>>,
     stack: Stack,
+    sidebar: StackSidebar,
 }
 
 impl ConfigGUI {
@@ -105,6 +106,10 @@ impl ConfigGUI {
 
         let stack = Stack::new();
 
+        let sidebar = StackSidebar::new();
+        sidebar.set_stack(&stack);
+        sidebar.set_width_request(200);
+
         ConfigGUI {
             window,
             config_widgets,
@@ -112,6 +117,7 @@ impl ConfigGUI {
             content_box,
             changed_options: Rc::new(RefCell::new(HashMap::new())),
             stack,
+            sidebar,
         }
     }
 
@@ -119,12 +125,17 @@ impl ConfigGUI {
         self.config_widgets.clear();
         self.content_box.set_visible(true);
 
-        let sidebar = StackSidebar::new();
-        sidebar.set_stack(&self.stack);
-        sidebar.set_width_request(200);
-
-        self.content_box.append(&sidebar);
+        self.content_box.append(&self.sidebar);
         self.content_box.append(&self.stack);
+
+        self.stack.connect_visible_child_notify(move |stack| {
+            if let Some(child) = stack.visible_child() {
+                if let Some(scrolled_window) = child.downcast_ref::<ScrolledWindow>() {
+                    let adj = scrolled_window.vadjustment();
+                    adj.set_value(adj.lower());
+                }
+            }
+        });
 
         for category in &[
             "general",
