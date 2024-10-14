@@ -480,6 +480,12 @@ impl ConfigWidget {
                     "a path to a custom shader to be applied at the end of rendering. See examples/screenShader.frag for an example.",
                 );
 
+                Self::add_section(
+                    &container,
+                    "Blur",
+                    "Configure blur settings.",
+                    first_section.clone(),
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -1164,6 +1170,12 @@ impl ConfigWidget {
                     "inactive locked group border color",
                 );
 
+                Self::add_section(
+                    &container,
+                    "Groupbar Settings",
+                    "Configure groupbar behavior.",
+                    first_section.clone(),
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
