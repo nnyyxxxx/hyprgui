@@ -145,6 +145,7 @@ impl ConfigGUI {
             "gestures",
             "misc",
             "binds",
+            "group",
             "layouts",
         ] {
             let widget = ConfigWidget::new(category);
@@ -1098,7 +1099,14 @@ impl ConfigWidget {
                     "if enabled, swiping will use the r prefix instead of the m prefix for finding workspaces.",
                 );
             }
-            "Group" => {
+
+            "group" => {
+                Self::add_section(
+                    &container,
+                    "Group Settings",
+                    "Configure group behavior.",
+                    first_section.clone(),
+                );
                 Self::add_bool_option(
                     &container,
                     &mut options,
@@ -1169,7 +1177,6 @@ impl ConfigWidget {
                     "Locked Inactive Border Color",
                     "inactive locked group border color",
                 );
-
                 Self::add_section(
                     &container,
                     "Groupbar Settings",
