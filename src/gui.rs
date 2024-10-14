@@ -139,33 +139,33 @@ impl ConfigGUI {
         dialog.show();
     }
 
-    pub fn file_not_found(&mut self, file: String) {
+    pub fn custom_error_popup(&mut self, title: &str, text: &str, modal: bool) {
         let dialog = MessageDialog::builder()
             .message_type(gtk::MessageType::Error)
             .buttons(gtk::ButtonsType::Ok)
-            .title("File not found")
-            .text(format!("File not found: {}", file))
-            .modal(true)
+            .title(title)
+            .text(text)
+            .modal(modal)
             .build();
 
-        dialog.connect_response(|_, _| {
-            std::process::exit(1);
+        dialog.connect_response(|dialog, _| {
+            dialog.close();
         });
 
         dialog.show();
     }
 
-    pub fn saving_failed(&mut self, error: std::io::Error) {
+    pub fn custom_error_popup_critical(&mut self, title: &str, text: &str, modal: bool) {
         let dialog = MessageDialog::builder()
             .message_type(gtk::MessageType::Error)
             .buttons(gtk::ButtonsType::Ok)
-            .title("Saving failed")
-            .text(format!("Failed to save the configuration: {}", error))
-            .modal(true)
+            .title(title)
+            .text(text)
+            .modal(modal)
             .build();
 
-        dialog.connect_response(|dialog, _| {
-            dialog.close();
+        dialog.connect_response(|_, _| {
+            std::process::exit(1);
         });
 
         dialog.show();

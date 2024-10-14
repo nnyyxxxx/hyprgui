@@ -25,8 +25,11 @@ fn build_ui(app: &Application) {
     let config_path_full = get_config_path();
 
     if !config_path_full.exists() {
-        gui.borrow_mut()
-            .file_not_found(format!("~/{}", CONFIG_PATH));
+        gui.borrow_mut().custom_error_popup_critical(
+            "File not found",
+            &format!("File not found: ~/{}", CONFIG_PATH),
+            true,
+        );
     } else {
         let config_str = fs::read_to_string(config_path_full).unwrap();
         let parsed_config = parse_config(&config_str);
@@ -57,7 +60,11 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
         match fs::write(&path, updated_config_str) {
             Ok(_) => println!("Configuration saved to: ~/{}", CONFIG_PATH),
             Err(e) => {
-                gui_ref.saving_failed(e);
+                gui_ref.custom_error_popup(
+                    "Saving failed",
+                    &format!("Failed to save the configuration: {}", e),
+                    true,
+                );
             }
         }
     } else {
