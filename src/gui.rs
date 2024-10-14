@@ -750,7 +750,7 @@ impl ConfigWidget {
                     "Configure keyboard behavior.",
                     first_section.clone(),
                 );
-                Self::add_int_option(
+                Self::add_string_option(
                     &container,
                     &mut options,
                     "kb_model",
