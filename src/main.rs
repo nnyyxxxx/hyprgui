@@ -1,10 +1,6 @@
-use gtk::prelude::*;
-use gtk::Application;
+use gtk::{prelude::*, Application};
 use hyprparser::parse_config;
-use std::fs;
-use std::path::Path;
-use std::path::PathBuf;
-use std::{cell::RefCell, env, rc::Rc};
+use std::{cell::RefCell, env, fs, path::Path, path::PathBuf, rc::Rc};
 
 mod gui;
 

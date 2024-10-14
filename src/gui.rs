@@ -1,12 +1,7 @@
-use gtk::gdk;
-use gtk::prelude::*;
-use gtk::DropDown;
-use gtk::MessageDialog;
-use gtk::SpinButton;
-use gtk::Switch;
 use gtk::{
-    Application, ApplicationWindow, Box, Button, ColorButton, Entry, Frame, HeaderBar, Image,
-    Label, Orientation, Popover, ScrolledWindow, Stack, StackSidebar, StringList, Widget,
+    gdk, prelude::*, Application, ApplicationWindow, Box, Button, ColorButton, DropDown, Entry,
+    Frame, HeaderBar, Image, Label, MessageDialog, Orientation, Popover, ScrolledWindow,
+    SpinButton, Stack, StackSidebar, StringList, Switch, Widget,
 };
 
 use hyprparser::HyprlandConfig;
