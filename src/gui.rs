@@ -271,7 +271,7 @@ fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
             } else if name.contains("size") || name.contains("distance") {
                 (0.0, 1000.0, 1.0)
             } else {
-                (-1000.0, 1000.0, 1.0)
+                (0, 1000.0, 1.0)
             }
         }
     }
