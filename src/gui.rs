@@ -123,12 +123,13 @@ impl ConfigGUI {
         }
     }
 
-    pub fn custom_info_popup(&mut self, title: &str, text: &str) {
+    pub fn custom_info_popup(&mut self, title: &str, text: &str, modal: bool) {
         let dialog = MessageDialog::builder()
             .message_type(gtk::MessageType::Info)
             .buttons(gtk::ButtonsType::Ok)
             .title(title)
             .text(text)
+            .modal(modal)
             .build();
 
         dialog.connect_response(|dialog, _| {
@@ -144,6 +145,7 @@ impl ConfigGUI {
             .buttons(gtk::ButtonsType::Ok)
             .title("File not found")
             .text(format!("File not found: {}", file))
+            .modal(true)
             .build();
 
         dialog.connect_response(|_, _| {
@@ -159,6 +161,7 @@ impl ConfigGUI {
             .buttons(gtk::ButtonsType::Ok)
             .title("Saving failed")
             .text(format!("Failed to save the configuration: {}", error))
+            .modal(true)
             .build();
 
         dialog.connect_response(|dialog, _| {
