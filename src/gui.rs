@@ -147,6 +147,11 @@ impl ConfigGUI {
             "binds",
             "group",
             "layouts",
+            "xwayland",
+            "opengl",
+            "render",
+            "cursor",
+            "debug",
         ] {
             let widget = ConfigWidget::new(category);
             self.stack
