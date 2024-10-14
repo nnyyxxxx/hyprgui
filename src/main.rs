@@ -27,7 +27,17 @@ fn build_ui(app: &Application) {
             true,
         );
     } else {
-        let config_str = fs::read_to_string(config_path_full).unwrap();
+        let config_str = match fs::read_to_string(config_path_full) {
+            Ok(s) => s,
+            Err(e) => {
+                gui.borrow_mut().custom_error_popup_critical(
+                    "Reading failed",
+                    &format!("Failed to read the configuration file: {}", e),
+                    true,
+                );
+                String::new()
+            }
+        };
         let parsed_config = parse_config(&config_str);
         gui.borrow_mut().load_config(&parsed_config);
 
@@ -43,7 +53,17 @@ fn build_ui(app: &Application) {
 fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
     let mut gui_ref = gui.borrow_mut();
     let path = get_config_path();
-    let config_str = fs::read_to_string(&path).expect("Failed to read configuration file");
+    let config_str = match fs::read_to_string(&path) {
+        Ok(s) => s,
+        Err(e) => {
+            gui_ref.custom_error_popup_critical(
+                "Reading failed",
+                &format!("Failed to read the configuration file: {}", e),
+                true,
+            );
+            String::new()
+        }
+    };
 
     let mut parsed_config = parse_config(&config_str);
     let changes = gui_ref.get_changes();
