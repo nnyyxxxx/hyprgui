@@ -2,11 +2,12 @@ use gtk::prelude::*;
 use gtk::Application;
 use hyprparser::parse_config;
 use std::fs;
-use std::{cell::RefCell, rc::Rc};
+use std::path::Path;
+use std::{cell::RefCell, env, rc::Rc};
 
 mod gui;
 
-const CONFIG_PATH: &str = "~/.config/hypr/hyprland.conf";
+const CONFIG_PATH: &str = ".config/hypr/hyprland.conf";
 
 fn main() {
     let app = Application::builder()
@@ -20,29 +21,30 @@ fn main() {
 fn build_ui(app: &Application) {
     let gui = Rc::new(RefCell::new(gui::ConfigGUI::new(app)));
 
-    let config_str =
-        fs::read_to_string(CONFIG_PATH.replace("~", &std::env::var("HOME").unwrap())).unwrap();
-    let parsed_config = parse_config(&config_str);
-    gui.borrow_mut().load_config(&parsed_config);
+    let config_path_full =
+        Path::new(&env::var("HOME").unwrap_or_else(|_| ".".to_string())).join(CONFIG_PATH);
 
-    let gui_clone = gui.clone();
-    gui.borrow().save_button.connect_clicked(move |_| {
-        save_config_file(gui_clone.clone());
-    });
+    if !config_path_full.exists() {
+        gui.borrow_mut()
+            .file_not_found(format!("~/{}", CONFIG_PATH));
+    } else {
+        let config_str = fs::read_to_string(config_path_full).unwrap();
+        let parsed_config = parse_config(&config_str);
+        gui.borrow_mut().load_config(&parsed_config);
+
+        let gui_clone = gui.clone();
+        gui.borrow().save_button.connect_clicked(move |_| {
+            save_config_file(gui_clone.clone());
+        });
+    }
 
     gui.borrow().window.present();
 }
 
 fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
     let gui_ref = gui.borrow();
-    let path = CONFIG_PATH.replace("~", &std::env::var("HOME").unwrap());
-    let config_str = match fs::read_to_string(&path) {
-        Ok(content) => content,
-        Err(e) => {
-            eprintln!("Error reading configuration file: {}", e);
-            return;
-        }
-    };
+    let path = CONFIG_PATH.replace("~", &env::var("HOME").unwrap());
+    let config_str = fs::read_to_string(&path).expect("Failed to read configuration file");
 
     let mut parsed_config = parse_config(&config_str);
     let changes = gui_ref.get_changes();
@@ -53,7 +55,7 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
         let updated_config_str = parsed_config.to_string();
 
         match fs::write(&path, updated_config_str) {
-            Ok(_) => println!("Configuration saved successfully to {}", path),
+            Ok(_) => println!("Configuration saved to: {}", path),
             Err(e) => eprintln!("Error saving configuration: {}", e),
         }
     } else {

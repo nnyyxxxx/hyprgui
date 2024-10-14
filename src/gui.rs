@@ -1,6 +1,7 @@
 use gtk::gdk;
 use gtk::prelude::*;
 use gtk::DropDown;
+use gtk::MessageDialog;
 use gtk::SpinButton;
 use gtk::Switch;
 use gtk::{
@@ -120,6 +121,21 @@ impl ConfigGUI {
             stack,
             sidebar,
         }
+    }
+
+    pub fn file_not_found(&mut self, file: String) {
+        let dialog = MessageDialog::builder()
+            .message_type(gtk::MessageType::Error)
+            .buttons(gtk::ButtonsType::Ok)
+            .title("File not found")
+            .text(format!("File not found: {}", file))
+            .build();
+
+        dialog.connect_response(|_, _| {
+            std::process::exit(1);
+        });
+
+        dialog.show();
     }
 
     pub fn load_config(&mut self, config: &HyprlandConfig) {
