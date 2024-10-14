@@ -138,30 +138,34 @@ impl ConfigGUI {
             }
         });
 
-        for category in &[
-            "general",
-            "decoration",
-            "animations",
-            "input",
-            "gestures",
-            "misc",
-            "binds",
-            "group",
-            "layouts",
-            "xwayland",
-            "opengl",
-            "render",
-            "cursor",
-            "debug",
-        ] {
+        let categories = [
+            ("General", "general"),
+            ("Decoration", "decoration"),
+            ("Animations", "animations"),
+            ("Input", "input"),
+            ("Gestures", "gestures"),
+            ("Misc", "misc"),
+            ("Binds", "binds"),
+            ("Group", "group"),
+            ("Layouts", "layouts"),
+            ("XWayland", "xwayland"),
+            ("OpenGL", "opengl"),
+            ("Render", "render"),
+            ("Cursor", "cursor"),
+            ("Debug", "debug"),
+        ];
+
+        for (display_name, category) in &categories {
             let widget = ConfigWidget::new(category);
             self.stack
-                .add_titled(&widget.scrolled_window, Some(category), category);
+                .add_titled(&widget.scrolled_window, Some(category), display_name);
             self.config_widgets.insert(category.to_string(), widget);
         }
 
-        for (category, widget) in &self.config_widgets {
-            widget.load_config(config, category, self.changed_options.clone());
+        for (_, category) in &categories {
+            if let Some(widget) = self.config_widgets.get(*category) {
+                widget.load_config(config, category, self.changed_options.clone());
+            }
         }
     }
 
