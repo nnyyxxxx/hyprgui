@@ -1,6 +1,7 @@
 use gtk::gdk;
 use gtk::prelude::*;
 use gtk::DropDown;
+use gtk::SpinButton;
 use gtk::Switch;
 use gtk::{
     Application, ApplicationWindow, Box, Button, ColorButton, Entry, Frame, HeaderBar, Image,
@@ -203,6 +204,72 @@ impl ConfigGUI {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
+    match name {
+        "border_size" => (0.0, 10.0, 1.0),
+        "gaps_in" | "gaps_out" | "gaps_workspaces" => (0.0, 50.0, 1.0),
+        "resize_corner" => (0.0, 4.0, 1.0),
+        "rounding" => (0.0, 20.0, 1.0),
+        "active_opacity" | "inactive_opacity" | "fullscreen_opacity" => (0.0, 1.0, 0.1),
+        "shadow_range" => (0.0, 50.0, 1.0),
+        "shadow_render_power" => (1.0, 4.0, 1.0),
+        "shadow_scale" => (0.0, 1.0, 0.1),
+        "dim_strength" => (0.0, 1.0, 0.1),
+        "dim_special" => (0.0, 1.0, 0.1),
+        "dim_around" => (0.0, 1.0, 0.1),
+        "size" => (1.0, 20.0, 1.0),
+        "passes" => (1.0, 10.0, 1.0),
+        "noise" => (0.0, 1.0, 0.01),
+        "contrast" => (0.0, 2.0, 0.1),
+        "brightness" => (0.0, 2.0, 0.1),
+        "vibrancy" => (0.0, 1.0, 0.1),
+        "vibrancy_darkness" => (0.0, 1.0, 0.1),
+        "popups_ignorealpha" => (0.0, 1.0, 0.1),
+        "sensitivity" => (-1.0, 1.0, 0.1),
+        "scroll_button" => (0.0, 9.0, 1.0),
+        "scroll_factor" => (0.1, 10.0, 0.1),
+        "follow_mouse" => (0.0, 3.0, 1.0),
+        "float_switch_override_focus" => (0.0, 2.0, 1.0),
+        "workspace_swipe_fingers" => (2.0, 5.0, 1.0),
+        "workspace_swipe_distance" => (100.0, 500.0, 10.0),
+        "workspace_swipe_min_speed_to_force" => (0.0, 100.0, 1.0),
+        "workspace_swipe_cancel_ratio" => (0.0, 1.0, 0.1),
+        "workspace_swipe_direction_lock_threshold" => (0.0, 50.0, 1.0),
+        "drag_into_group" => (0.0, 2.0, 1.0),
+        "force_default_wallpaper" => (-1.0, 2.0, 1.0),
+        "vrr" => (0.0, 2.0, 1.0),
+        "render_ahead_safezone" => (0.0, 10.0, 1.0),
+        "new_window_takes_over_fullscreen" => (0.0, 2.0, 1.0),
+        "initial_workspace_tracking" => (0.0, 2.0, 1.0),
+        "render_unfocused_fps" => (1.0, 60.0, 1.0),
+        "scroll_event_delay" => (0.0, 1000.0, 10.0),
+        "workspace_center_on" => (0.0, 1.0, 1.0),
+        "focus_preferred_method" => (0.0, 1.0, 1.0),
+        "force_introspection" => (0.0, 2.0, 1.0),
+        "explicit_sync" => (0.0, 2.0, 1.0),
+        "explicit_sync_kms" => (0.0, 2.0, 1.0),
+        "min_refresh_rate" => (1.0, 240.0, 1.0),
+        "hotspot_padding" => (0.0, 10.0, 1.0),
+        "inactive_timeout" => (0.0, 60.0, 1.0),
+        "zoom_factor" => (1.0, 5.0, 0.1),
+        "damage_tracking" => (0.0, 2.0, 1.0),
+        "watchdog_timeout" => (0.0, 60.0, 1.0),
+        "error_limit" => (1.0, 100.0, 1.0),
+        "error_position" => (0.0, 1.0, 1.0),
+        _ => {
+            if description.contains("[0.0 - 1.0]") {
+                (0.0, 1.0, 0.1)
+            } else if description.contains("[0/1]") || description.contains("[0/1/2]") {
+                (0.0, 2.0, 1.0)
+            } else if name.contains("opacity") || name.contains("ratio") {
+                (0.0, 1.0, 0.1)
+            } else {
+                (0.0, 1000.0, 1.0)
             }
         }
     }
@@ -2162,7 +2229,9 @@ impl ConfigWidget {
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
 
-        let spin_button = gtk::SpinButton::with_range(0.0, 1000.0, 1.0);
+        let (min, max, step) = get_option_limits(name, description);
+        let spin_button = SpinButton::with_range(min, max, step);
+        spin_button.set_digits(0);
         spin_button.set_halign(gtk::Align::End);
         spin_button.set_width_request(100);
 
@@ -2268,7 +2337,8 @@ impl ConfigWidget {
         label_box.append(&label_widget);
         label_box.append(&tooltip_button);
 
-        let spin_button = gtk::SpinButton::with_range(0.0, 1000.0, 0.1);
+        let (min, max, step) = get_option_limits(name, description);
+        let spin_button = SpinButton::with_range(min, max, step);
         spin_button.set_digits(2);
         spin_button.set_halign(gtk::Align::End);
         spin_button.set_width_request(100);
