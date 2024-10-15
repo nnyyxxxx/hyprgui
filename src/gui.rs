@@ -97,23 +97,6 @@ impl ConfigGUI {
             .title_widget(&gtk::Label::new(Some("Hyprland Configuration")))
             .build();
 
-        let search_button = Button::from_icon_name("system-search-symbolic");
-        search_button.set_tooltip_text(Some("Search"));
-
-        let search_entry = SearchEntry::new();
-        search_entry.set_width_request(200);
-
-        let search_revealer = gtk::Revealer::new();
-        search_revealer.set_transition_type(gtk::RevealerTransitionType::SlideRight);
-        search_revealer.set_transition_duration(300);
-        search_revealer.set_reveal_child(false);
-        search_revealer.set_child(Some(&search_entry));
-
-        let search_box = Box::new(Orientation::Horizontal, 0);
-        search_box.append(&search_button);
-        search_box.append(&search_revealer);
-        header_bar.pack_start(&search_box);
-
         let gear_button = Button::from_icon_name("emblem-system-symbolic");
         header_bar.pack_start(&gear_button);
 
@@ -160,6 +143,23 @@ impl ConfigGUI {
             popover.set_parent(button);
             popover.popup();
         });
+
+        let search_button = Button::from_icon_name("system-search-symbolic");
+        search_button.set_tooltip_text(Some("Search"));
+
+        let search_entry = SearchEntry::new();
+        search_entry.set_width_request(200);
+
+        let search_revealer = gtk::Revealer::new();
+        search_revealer.set_transition_type(gtk::RevealerTransitionType::SlideRight);
+        search_revealer.set_transition_duration(300);
+        search_revealer.set_reveal_child(false);
+        search_revealer.set_child(Some(&search_entry));
+
+        let search_box = Box::new(Orientation::Horizontal, 0);
+        search_box.append(&search_button);
+        search_box.append(&search_revealer);
+        header_bar.pack_start(&search_box);
 
         let save_button = Button::with_label("Save");
         header_bar.pack_end(&save_button);
@@ -294,11 +294,23 @@ impl ConfigGUI {
 
         self.search_entry.connect_changed(move |entry| {
             let search_term = entry.text().to_string();
-            Self::perform_search(&search_term, &stack, &config_widgets, &sidebar, &no_results_label);
+            Self::perform_search(
+                &search_term,
+                &stack,
+                &config_widgets,
+                &sidebar,
+                &no_results_label,
+            );
         });
     }
 
-    fn perform_search(search_term: &str, stack: &Stack, config_widgets: &Rc<RefCell<HashMap<String, ConfigWidget>>>, sidebar: &StackSidebar, no_results_label: &Label) {
+    fn perform_search(
+        search_term: &str,
+        stack: &Stack,
+        config_widgets: &Rc<RefCell<HashMap<String, ConfigWidget>>>,
+        sidebar: &StackSidebar,
+        no_results_label: &Label,
+    ) {
         let search_term = search_term.to_lowercase();
         let config_widgets = config_widgets.borrow();
         let mut any_visible = false;
@@ -308,11 +320,11 @@ impl ConfigGUI {
             for (option_name, option_widget) in &widget.options {
                 let option_text = option_name.to_lowercase();
                 let visible = search_term.is_empty() || option_text.contains(&search_term);
-                
+
                 if let Some(parent) = option_widget.parent() {
                     parent.set_visible(visible);
                 }
-                
+
                 category_visible |= visible;
             }
 
@@ -518,7 +530,9 @@ impl ConfigGUI {
             let widget = ConfigWidget::new(category);
             self.stack
                 .add_titled(&widget.scrolled_window, Some(category), display_name);
-            self.config_widgets.borrow_mut().insert(category.to_string(), widget);
+            self.config_widgets
+                .borrow_mut()
+                .insert(category.to_string(), widget);
         }
 
         for (_, category) in &categories {
