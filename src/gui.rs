@@ -218,9 +218,17 @@ impl ConfigGUI {
                             }
                         }
                     }
-                    self.custom_info_popup("Config Loaded", "HyprGUI configuration loaded successfully.", false);
+                    self.custom_info_popup(
+                        "Config Loaded",
+                        "HyprGUI configuration loaded successfully.",
+                        false,
+                    );
                 } else {
-                    self.custom_error_popup("Invalid Config", "Failed to parse the configuration file.", false);
+                    self.custom_error_popup(
+                        "Invalid Config",
+                        "Failed to parse the configuration file.",
+                        false,
+                    );
                 }
             }
             Err(e) => {
@@ -244,7 +252,11 @@ impl ConfigGUI {
         match serde_json::to_string_pretty(&config) {
             Ok(json) => match fs::write(path, json) {
                 Ok(_) => {
-                    self.custom_info_popup("Config Saved", "HyprGUI configuration saved successfully.", false);
+                    self.custom_info_popup(
+                        "Config Saved",
+                        "HyprGUI configuration saved successfully.",
+                        false,
+                    );
                 }
                 Err(e) => {
                     self.custom_error_popup(
