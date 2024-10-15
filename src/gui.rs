@@ -454,7 +454,13 @@ impl ConfigGUI {
                     let formatted_value =
                         if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
                             let rgba = color_button.rgba();
-                            config.format_color(rgba.red(), rgba.green(), rgba.blue(), rgba.alpha())
+                            format!(
+                                "rgba({:02X}{:02X}{:02X}{:02X})",
+                                (rgba.red() * 255.0) as u8,
+                                (rgba.green() * 255.0) as u8,
+                                (rgba.blue() * 255.0) as u8,
+                                (rgba.alpha() * 255.0) as u8
+                            )
                         } else {
                             value.clone()
                         };
@@ -2792,11 +2798,11 @@ impl ConfigWidget {
                     let mut changes = changed_options.borrow_mut();
                     let new_color = cb.rgba();
                     let new_value = format!(
-                        "rgba({},{},{},{})",
-                        new_color.red(),
-                        new_color.green(),
-                        new_color.blue(),
-                        new_color.alpha()
+                        "rgba({:02X}{:02X}{:02X}{:02X})",
+                        (new_color.red() * 255.0) as u8,
+                        (new_color.green() * 255.0) as u8,
+                        (new_color.blue() * 255.0) as u8,
+                        (new_color.alpha() * 255.0) as u8
                     );
                     changes.insert((category.clone(), name.clone()), new_value);
                 });
