@@ -125,8 +125,8 @@ impl ConfigGUI {
         popover_box.set_margin_start(5);
         popover_box.set_margin_end(5);
 
-        let load_config_button = Button::with_label("Load HyprGUI Config");
         let save_config_button = Button::with_label("Save HyprGUI Config");
+        let load_config_button = Button::with_label("Load HyprGUI Config");
 
         popover_box.append(&load_config_button);
         popover_box.append(&save_config_button);
