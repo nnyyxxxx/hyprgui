@@ -136,6 +136,8 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
                     let parsed_config = parse_config(&config_str);
                     gui_ref.load_config(&parsed_config);
 
+                    gui_ref.get_changes().borrow_mut().clear();
+
                     if let Err(e) = fs::remove_file(&backup_path) {
                         gui_ref.custom_error_popup(
                             "Backup Deletion Failed",

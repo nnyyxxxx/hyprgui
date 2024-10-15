@@ -385,6 +385,18 @@ impl ConfigGUI {
         self.config_widgets.clear();
         self.content_box.set_visible(true);
 
+        while let Some(child) = self.stack.first_child() {
+            self.stack.remove(&child);
+        }
+
+        while let Some(child) = self.content_box.first_child() {
+            self.content_box.remove(&child);
+        }
+
+        self.sidebar = StackSidebar::new();
+        self.sidebar.set_stack(&self.stack);
+        self.sidebar.set_width_request(200);
+
         self.content_box.append(&self.sidebar);
         self.content_box.append(&self.stack);
 
@@ -426,6 +438,8 @@ impl ConfigGUI {
                 widget.load_config(config, category, self.changed_options.clone());
             }
         }
+
+        self.changed_options.borrow_mut().clear();
     }
 
     pub fn get_changes(&self) -> Rc<RefCell<HashMap<(String, String), String>>> {
