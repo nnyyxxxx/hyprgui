@@ -22,7 +22,6 @@ fn build_ui(app: &Application) {
     gui::ConfigGUI::setup_config_buttons(gui.clone());
 
     let config_path_full = get_config_path();
-    let backup_created = Rc::new(RefCell::new(false));
 
     if !config_path_full.exists() {
         gui.borrow_mut().custom_error_popup_critical(
@@ -46,9 +45,8 @@ fn build_ui(app: &Application) {
         gui.borrow_mut().load_config(&parsed_config);
 
         let gui_clone = gui.clone();
-        let backup_created_clone = backup_created.clone();
         gui.borrow().save_button.connect_clicked(move |_| {
-            save_config_file(gui_clone.clone(), backup_created_clone.clone());
+            save_config_file(gui_clone.clone());
         });
 
         let undo_button = Button::with_label("Undo Changes");
@@ -67,9 +65,15 @@ fn build_ui(app: &Application) {
     gui.borrow().window.present();
 }
 
-fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>, backup_created: Rc<RefCell<bool>>) {
+fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
     let mut gui_ref = gui.borrow_mut();
     let path = get_config_path();
+    let backup_path = path.with_file_name(format!(
+        "{}{}",
+        path.file_name().unwrap().to_str().unwrap(),
+        BACKUP_SUFFIX
+    ));
+
     let config_str = match fs::read_to_string(&path) {
         Ok(s) => s,
         Err(e) => {
@@ -78,7 +82,7 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>, backup_created: Rc<RefCell
                 &format!("Failed to read the configuration file: {}", e),
                 true,
             );
-            String::new()
+            return;
         }
     };
 
@@ -86,12 +90,7 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>, backup_created: Rc<RefCell
     let changes = gui_ref.get_changes();
 
     if !changes.borrow().is_empty() {
-        if !*backup_created.borrow() {
-            let backup_path = path.with_file_name(format!(
-                "{}{}",
-                path.file_name().unwrap().to_str().unwrap(),
-                BACKUP_SUFFIX
-            ));
+        if !backup_path.exists() {
             if let Err(e) = fs::copy(&path, &backup_path) {
                 gui_ref.custom_error_popup(
                     "Backup failed",
@@ -100,7 +99,6 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>, backup_created: Rc<RefCell
                 );
                 return;
             }
-            *backup_created.borrow_mut() = true;
         }
 
         gui_ref.apply_changes(&mut parsed_config);
@@ -138,10 +136,23 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
                 if let Ok(config_str) = fs::read_to_string(&path) {
                     let parsed_config = parse_config(&config_str);
                     gui_ref.load_config(&parsed_config);
-                    gui_ref.custom_info_popup("Undo successful", "Configuration restored from backup.", true);
+                    
+                    if let Err(e) = fs::remove_file(&backup_path) {
+                        gui_ref.custom_error_popup(
+                            "Backup Deletion Failed",
+                            &format!("Failed to delete the backup file: {}", e),
+                            true,
+                        );
+                    } else {
+                        gui_ref.custom_info_popup(
+                            "Undo Successful",
+                            "Configuration restored from backup and backup file deleted.",
+                            true,
+                        );
+                    }
                 } else {
                     gui_ref.custom_error_popup(
-                        "Reload failed",
+                        "Reload Failed",
                         "Failed to reload the configuration after undo.",
                         true,
                     );
@@ -149,7 +160,7 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
             }
             Err(e) => {
                 gui_ref.custom_error_popup(
-                    "Undo failed",
+                    "Undo Failed",
                     &format!("Failed to restore from backup: {}", e),
                     true,
                 );
@@ -157,7 +168,7 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
         }
     } else {
         gui_ref.custom_error_popup(
-            "Undo failed",
+            "Undo Failed",
             "No backup file found. Save changes at least once to create a backup.",
             true,
         );
