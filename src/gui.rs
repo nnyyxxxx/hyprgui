@@ -94,6 +94,28 @@ impl ConfigGUI {
         let gear_button = Button::from_icon_name("emblem-system-symbolic");
         header_bar.pack_start(&gear_button);
 
+        let tooltip_button = Button::new();
+        let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
+        tooltip_button.set_child(Some(&question_mark_icon));
+        tooltip_button.set_has_frame(false);
+        header_bar.pack_start(&tooltip_button);
+
+        let popover = Popover::new();
+        let tooltip_text = "The save button saves the options that you chose in the gui and exports it to json format, likewise the load button loads these saved options from the exported json file; automatically filling in the options in the gui with the specified ones in the json file, clicking save to apply these changes is still necessary though.";
+        let tooltip_label = Label::new(Some(tooltip_text));
+        tooltip_label.set_margin_top(5);
+        tooltip_label.set_margin_bottom(5);
+        tooltip_label.set_margin_start(5);
+        tooltip_label.set_margin_end(5);
+        tooltip_label.set_wrap(true);
+        tooltip_label.set_max_width_chars(50);
+        popover.set_child(Some(&tooltip_label));
+
+        tooltip_button.connect_clicked(move |button| {
+            popover.set_parent(button);
+            popover.popup();
+        });
+
         let save_button = Button::with_label("Save");
         header_bar.pack_end(&save_button);
 
