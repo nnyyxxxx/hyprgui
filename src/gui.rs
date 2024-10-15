@@ -208,9 +208,9 @@ impl ConfigGUI {
                 if let Ok(config) = serde_json::from_str::<HashMap<String, String>>(&content) {
                     for (key, value) in config {
                         let parts: Vec<&str> = key.split(':').collect();
-                        if parts.len() == 2 {
+                        if parts.len() >= 2 {
                             let category = parts[0].to_string();
-                            let name = parts[1].to_string();
+                            let name = parts[1..].join(":");
                             if let Some(widget) = self.config_widgets.get(&category) {
                                 if let Some(option_widget) = widget.options.get(&name) {
                                     self.set_widget_value(option_widget, &value);
