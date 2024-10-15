@@ -74,7 +74,6 @@ pub struct ConfigGUI {
     changed_options: Rc<RefCell<HashMap<(String, String), String>>>,
     stack: Stack,
     sidebar: StackSidebar,
-    gear_button: Button,
     load_config_button: Button,
     save_config_button: Button,
 }
@@ -144,7 +143,6 @@ impl ConfigGUI {
             changed_options: Rc::new(RefCell::new(HashMap::new())),
             stack,
             sidebar,
-            gear_button,
             load_config_button,
             save_config_button,
         }
