@@ -292,6 +292,13 @@ impl ConfigGUI {
             button_clone.grab_focus();
         });
 
+        let revealer_clone3 = revealer.clone();
+        let button_clone2 = button.clone();
+        self.search_entry.connect_activate(move |_| {
+            revealer_clone3.set_reveal_child(false);
+            button_clone2.grab_focus();
+        });
+
         self.search_entry.connect_changed(move |entry| {
             let search_term = entry.text().to_string();
             Self::perform_search(
@@ -301,6 +308,18 @@ impl ConfigGUI {
                 &sidebar,
                 &no_results_label,
             );
+        });
+
+        let revealer_clone4 = revealer.clone();
+        let button_clone3 = button.clone();
+        let window = self.window.clone();
+        let gesture_click = gtk::GestureClick::new();
+        window.add_controller(gesture_click.clone());
+        gesture_click.connect_pressed(move |_, _, _, _| {
+            if revealer_clone4.reveals_child() {
+                revealer_clone4.set_reveal_child(false);
+                button_clone3.grab_focus();
+            }
         });
     }
 
