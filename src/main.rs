@@ -1,5 +1,5 @@
-use gtk::{prelude::*, Application};
 use gtk::Button;
+use gtk::{prelude::*, Application};
 use hyprparser::parse_config;
 use std::{cell::RefCell, env, fs, path::Path, path::PathBuf, rc::Rc};
 
@@ -136,7 +136,7 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
                 if let Ok(config_str) = fs::read_to_string(&path) {
                     let parsed_config = parse_config(&config_str);
                     gui_ref.load_config(&parsed_config);
-                    
+
                     if let Err(e) = fs::remove_file(&backup_path) {
                         gui_ref.custom_error_popup(
                             "Backup Deletion Failed",
