@@ -76,6 +76,7 @@ pub struct ConfigGUI {
     sidebar: StackSidebar,
     load_config_button: Button,
     save_config_button: Button,
+    pub gear_menu: Rc<RefCell<Popover>>,
 }
 
 impl ConfigGUI {
@@ -93,6 +94,28 @@ impl ConfigGUI {
 
         let gear_button = Button::from_icon_name("emblem-system-symbolic");
         header_bar.pack_start(&gear_button);
+
+        let gear_menu = Rc::new(RefCell::new(Popover::new()));
+        gear_menu.borrow().set_parent(&gear_button);
+
+        let gear_menu_box = Box::new(Orientation::Vertical, 5);
+        gear_menu_box.set_margin_top(5);
+        gear_menu_box.set_margin_bottom(5);
+        gear_menu_box.set_margin_start(5);
+        gear_menu_box.set_margin_end(5);
+
+        let save_config_button = Button::with_label("Save HyprGUI Config");
+        let load_config_button = Button::with_label("Load HyprGUI Config");
+
+        gear_menu_box.append(&load_config_button);
+        gear_menu_box.append(&save_config_button);
+
+        gear_menu.borrow().set_child(Some(&gear_menu_box));
+
+        let gear_menu_clone = gear_menu.clone();
+        gear_button.connect_clicked(move |_| {
+            gear_menu_clone.borrow().popup();
+        });
 
         let tooltip_button = Button::new();
         let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
@@ -136,27 +159,6 @@ impl ConfigGUI {
         sidebar.set_stack(&stack);
         sidebar.set_width_request(200);
 
-        let popover = Popover::new();
-        popover.set_parent(&gear_button);
-
-        let popover_box = Box::new(Orientation::Vertical, 5);
-        popover_box.set_margin_top(5);
-        popover_box.set_margin_bottom(5);
-        popover_box.set_margin_start(5);
-        popover_box.set_margin_end(5);
-
-        let save_config_button = Button::with_label("Save HyprGUI Config");
-        let load_config_button = Button::with_label("Load HyprGUI Config");
-
-        popover_box.append(&load_config_button);
-        popover_box.append(&save_config_button);
-
-        popover.set_child(Some(&popover_box));
-
-        gear_button.connect_clicked(move |_| {
-            popover.popup();
-        });
-
         ConfigGUI {
             window,
             config_widgets,
@@ -167,6 +169,7 @@ impl ConfigGUI {
             sidebar,
             load_config_button,
             save_config_button,
+            gear_menu,
         }
     }
 

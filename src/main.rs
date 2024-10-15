@@ -1,10 +1,12 @@
 use gtk::{prelude::*, Application};
+use gtk::Button;
 use hyprparser::parse_config;
 use std::{cell::RefCell, env, fs, path::Path, path::PathBuf, rc::Rc};
 
 mod gui;
 
 const CONFIG_PATH: &str = ".config/hypr/hyprland.conf";
+const BACKUP_SUFFIX: &str = "-bak";
 
 fn main() {
     let app = Application::builder()
@@ -20,6 +22,7 @@ fn build_ui(app: &Application) {
     gui::ConfigGUI::setup_config_buttons(gui.clone());
 
     let config_path_full = get_config_path();
+    let backup_created = Rc::new(RefCell::new(false));
 
     if !config_path_full.exists() {
         gui.borrow_mut().custom_error_popup_critical(
@@ -28,7 +31,7 @@ fn build_ui(app: &Application) {
             true,
         );
     } else {
-        let config_str = match fs::read_to_string(config_path_full) {
+        let config_str = match fs::read_to_string(&config_path_full) {
             Ok(s) => s,
             Err(e) => {
                 gui.borrow_mut().custom_error_popup_critical(
@@ -43,15 +46,28 @@ fn build_ui(app: &Application) {
         gui.borrow_mut().load_config(&parsed_config);
 
         let gui_clone = gui.clone();
+        let backup_created_clone = backup_created.clone();
         gui.borrow().save_button.connect_clicked(move |_| {
-            save_config_file(gui_clone.clone());
+            save_config_file(gui_clone.clone(), backup_created_clone.clone());
         });
+
+        let undo_button = Button::with_label("Undo Changes");
+        let gui_clone = gui.clone();
+        undo_button.connect_clicked(move |_| {
+            undo_changes(gui_clone.clone());
+        });
+
+        if let Some(gear_menu_box) = gui.borrow().gear_menu.borrow().child() {
+            if let Some(box_widget) = gear_menu_box.downcast_ref::<gtk::Box>() {
+                box_widget.append(&undo_button);
+            }
+        }
     }
 
     gui.borrow().window.present();
 }
 
-fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
+fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>, backup_created: Rc<RefCell<bool>>) {
     let mut gui_ref = gui.borrow_mut();
     let path = get_config_path();
     let config_str = match fs::read_to_string(&path) {
@@ -70,6 +86,23 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
     let changes = gui_ref.get_changes();
 
     if !changes.borrow().is_empty() {
+        if !*backup_created.borrow() {
+            let backup_path = path.with_file_name(format!(
+                "{}{}",
+                path.file_name().unwrap().to_str().unwrap(),
+                BACKUP_SUFFIX
+            ));
+            if let Err(e) = fs::copy(&path, &backup_path) {
+                gui_ref.custom_error_popup(
+                    "Backup failed",
+                    &format!("Failed to create backup: {}", e),
+                    true,
+                );
+                return;
+            }
+            *backup_created.borrow_mut() = true;
+        }
+
         gui_ref.apply_changes(&mut parsed_config);
 
         let updated_config_str = parsed_config.to_string();
@@ -86,6 +119,48 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
         }
     } else {
         gui_ref.custom_info_popup("Saving failed", "No changes to save.", true);
+    }
+}
+
+fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
+    let mut gui_ref = gui.borrow_mut();
+    let path = get_config_path();
+    let backup_path = path.with_file_name(format!(
+        "{}{}",
+        path.file_name().unwrap().to_str().unwrap(),
+        BACKUP_SUFFIX
+    ));
+
+    if backup_path.exists() {
+        match fs::copy(&backup_path, &path) {
+            Ok(_) => {
+                println!("Configuration restored from backup");
+                if let Ok(config_str) = fs::read_to_string(&path) {
+                    let parsed_config = parse_config(&config_str);
+                    gui_ref.load_config(&parsed_config);
+                    gui_ref.custom_info_popup("Undo successful", "Configuration restored from backup.", true);
+                } else {
+                    gui_ref.custom_error_popup(
+                        "Reload failed",
+                        "Failed to reload the configuration after undo.",
+                        true,
+                    );
+                }
+            }
+            Err(e) => {
+                gui_ref.custom_error_popup(
+                    "Undo failed",
+                    &format!("Failed to restore from backup: {}", e),
+                    true,
+                );
+            }
+        }
+    } else {
+        gui_ref.custom_error_popup(
+            "Undo failed",
+            "No backup file found. Save changes at least once to create a backup.",
+            true,
+        );
     }
 }
 
