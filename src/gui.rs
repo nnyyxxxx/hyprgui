@@ -1,7 +1,8 @@
 use gtk::{
     gdk, glib, prelude::*, Application, ApplicationWindow, Box, Button, ColorButton, DropDown,
-    Entry, Frame, HeaderBar, Image, Label, MessageDialog, Orientation, Popover, ScrolledWindow,
-    SpinButton, Stack, StackSidebar, StringList, Switch, Widget,
+    Entry, EventControllerFocus, Frame, HeaderBar, Image, Label, MessageDialog, Orientation,
+    Popover, ScrolledWindow, SearchEntry, SpinButton, Stack, StackSidebar, StringList, Switch,
+    Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -68,15 +69,19 @@ fn add_dropdown_option(
 
 pub struct ConfigGUI {
     pub window: ApplicationWindow,
-    config_widgets: HashMap<String, ConfigWidget>,
+    config_widgets: Rc<RefCell<HashMap<String, ConfigWidget>>>,
     pub save_button: Button,
-    content_box: Box,
+    content_area: gtk::Overlay,
     changed_options: Rc<RefCell<HashMap<(String, String), String>>>,
     stack: Stack,
     sidebar: StackSidebar,
     load_config_button: Button,
     save_config_button: Button,
     pub gear_menu: Rc<RefCell<Popover>>,
+    search_button: Button,
+    search_entry: SearchEntry,
+    search_revealer: gtk::Revealer,
+    no_results_label: gtk::Label,
 }
 
 impl ConfigGUI {
@@ -91,6 +96,23 @@ impl ConfigGUI {
             .show_title_buttons(false)
             .title_widget(&gtk::Label::new(Some("Hyprland Configuration")))
             .build();
+
+        let search_button = Button::from_icon_name("system-search-symbolic");
+        search_button.set_tooltip_text(Some("Search"));
+
+        let search_entry = SearchEntry::new();
+        search_entry.set_width_request(200);
+
+        let search_revealer = gtk::Revealer::new();
+        search_revealer.set_transition_type(gtk::RevealerTransitionType::SlideRight);
+        search_revealer.set_transition_duration(300);
+        search_revealer.set_reveal_child(false);
+        search_revealer.set_child(Some(&search_entry));
+
+        let search_box = Box::new(Orientation::Horizontal, 0);
+        search_box.append(&search_button);
+        search_box.append(&search_revealer);
+        header_bar.pack_start(&search_box);
 
         let gear_button = Button::from_icon_name("emblem-system-symbolic");
         header_bar.pack_start(&gear_button);
@@ -147,29 +169,47 @@ impl ConfigGUI {
         let main_box = Box::new(Orientation::Vertical, 0);
 
         let content_box = Box::new(Orientation::Horizontal, 0);
-        main_box.append(&content_box);
+        content_box.set_hexpand(true);
+        content_box.set_vexpand(true);
+
+        let sidebar = StackSidebar::new();
+        let stack = Stack::new();
+        sidebar.set_stack(&stack);
+        sidebar.set_width_request(200);
+
+        content_box.append(&sidebar);
+        content_box.append(&stack);
+
+        let no_results_label = Label::new(Some("No matching options found"));
+        no_results_label.set_visible(false);
+        no_results_label.set_halign(gtk::Align::Center);
+        no_results_label.set_valign(gtk::Align::Center);
+
+        let overlay = gtk::Overlay::new();
+        overlay.set_child(Some(&content_box));
+        overlay.add_overlay(&no_results_label);
+
+        main_box.append(&overlay);
 
         window.set_child(Some(&main_box));
 
-        let config_widgets = HashMap::new();
-
-        let stack = Stack::new();
-
-        let sidebar = StackSidebar::new();
-        sidebar.set_stack(&stack);
-        sidebar.set_width_request(200);
+        let config_widgets = Rc::new(RefCell::new(HashMap::new()));
 
         ConfigGUI {
             window,
             config_widgets,
             save_button,
-            content_box,
+            content_area: overlay,
             changed_options: Rc::new(RefCell::new(HashMap::new())),
             stack,
             sidebar,
             load_config_button,
             save_config_button,
             gear_menu,
+            search_button,
+            search_entry,
+            search_revealer,
+            no_results_label,
         }
     }
 
@@ -227,6 +267,69 @@ impl ConfigGUI {
         });
     }
 
+    pub fn setup_search(&self) {
+        let revealer = self.search_revealer.clone();
+        let entry = self.search_entry.clone();
+        let button = self.search_button.clone();
+        let stack = self.stack.clone();
+        let config_widgets = self.config_widgets.clone();
+        let sidebar = self.sidebar.clone();
+        let no_results_label = self.no_results_label.clone();
+
+        let revealer_clone1 = revealer.clone();
+        self.search_button.connect_clicked(move |_| {
+            revealer_clone1.set_reveal_child(true);
+            entry.grab_focus();
+        });
+
+        let focus_controller = EventControllerFocus::new();
+        self.search_entry.add_controller(focus_controller.clone());
+
+        let revealer_clone2 = revealer.clone();
+        let button_clone = button.clone();
+        focus_controller.connect_leave(move |_| {
+            revealer_clone2.set_reveal_child(false);
+            button_clone.grab_focus();
+        });
+
+        self.search_entry.connect_changed(move |entry| {
+            let search_term = entry.text().to_string();
+            Self::perform_search(&search_term, &stack, &config_widgets, &sidebar, &no_results_label);
+        });
+    }
+
+    fn perform_search(search_term: &str, stack: &Stack, config_widgets: &Rc<RefCell<HashMap<String, ConfigWidget>>>, sidebar: &StackSidebar, no_results_label: &Label) {
+        let search_term = search_term.to_lowercase();
+        let config_widgets = config_widgets.borrow();
+        let mut any_visible = false;
+
+        for (category, widget) in config_widgets.iter() {
+            let mut category_visible = false;
+            for (option_name, option_widget) in &widget.options {
+                let option_text = option_name.to_lowercase();
+                let visible = search_term.is_empty() || option_text.contains(&search_term);
+                
+                if let Some(parent) = option_widget.parent() {
+                    parent.set_visible(visible);
+                }
+                
+                category_visible |= visible;
+            }
+
+            if let Some(child) = stack.child_by_name(category) {
+                child.set_visible(category_visible);
+                if category_visible && !any_visible {
+                    stack.set_visible_child(&child);
+                    any_visible = true;
+                }
+            }
+        }
+
+        stack.set_visible(any_visible);
+        no_results_label.set_visible(!any_visible);
+        sidebar.set_visible(true);
+    }
+
     fn load_hyprgui_config(&mut self, path: &PathBuf) {
         match fs::read_to_string(path) {
             Ok(content) => {
@@ -236,7 +339,7 @@ impl ConfigGUI {
                         if parts.len() >= 2 {
                             let category = parts[0].to_string();
                             let name = parts[1..].join(":");
-                            if let Some(widget) = self.config_widgets.get(&category) {
+                            if let Some(widget) = self.config_widgets.borrow().get(&category) {
                                 if let Some(option_widget) = widget.options.get(&name) {
                                     self.set_widget_value(option_widget, &value);
                                     self.changed_options
@@ -382,11 +485,8 @@ impl ConfigGUI {
     }
 
     pub fn load_config(&mut self, config: &HyprlandConfig) {
-        self.config_widgets.clear();
-        self.content_box.set_visible(true);
-
-        self.content_box.append(&self.sidebar);
-        self.content_box.append(&self.stack);
+        self.config_widgets.borrow_mut().clear();
+        self.content_area.set_visible(true);
 
         self.stack.connect_visible_child_notify(move |stack| {
             if let Some(child) = stack.visible_child() {
@@ -418,14 +518,16 @@ impl ConfigGUI {
             let widget = ConfigWidget::new(category);
             self.stack
                 .add_titled(&widget.scrolled_window, Some(category), display_name);
-            self.config_widgets.insert(category.to_string(), widget);
+            self.config_widgets.borrow_mut().insert(category.to_string(), widget);
         }
 
         for (_, category) in &categories {
-            if let Some(widget) = self.config_widgets.get(*category) {
+            if let Some(widget) = self.config_widgets.borrow().get(&category.to_string()) {
                 widget.load_config(config, category, self.changed_options.clone());
             }
         }
+
+        self.window.set_child(Some(&self.content_area));
     }
 
     pub fn get_changes(&self) -> Rc<RefCell<HashMap<(String, String), String>>> {
@@ -434,7 +536,7 @@ impl ConfigGUI {
 
     pub fn apply_changes(&self, config: &mut HyprlandConfig) {
         let changes = self.changed_options.borrow();
-        for (category, widget) in &self.config_widgets {
+        for (category, widget) in self.config_widgets.borrow().iter() {
             for (name, widget) in &widget.options {
                 if let Some(value) = changes.get(&(category.to_string(), name.to_string())) {
                     let formatted_value =
@@ -547,8 +649,9 @@ fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
     }
 }
 
+#[derive(Clone)]
 pub struct ConfigWidget {
-    options: HashMap<String, Widget>,
+    pub options: HashMap<String, Widget>,
     scrolled_window: ScrolledWindow,
 }
 
