@@ -1,3 +1,4 @@
+use gtk::glib::{clone, MainContext};
 use gtk::{
     gdk, prelude::*, Application, ApplicationWindow, Box, Button, ColorButton, DropDown, Entry,
     Frame, HeaderBar, Image, Label, MessageDialog, Orientation, Popover, ScrolledWindow,
@@ -7,6 +8,8 @@ use gtk::{
 use hyprparser::HyprlandConfig;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::fs;
+use std::path::PathBuf;
 use std::rc::Rc;
 
 fn add_dropdown_option(
@@ -72,6 +75,9 @@ pub struct ConfigGUI {
     changed_options: Rc<RefCell<HashMap<(String, String), String>>>,
     stack: Stack,
     sidebar: StackSidebar,
+    gear_button: Button,
+    load_config_button: Button,
+    save_config_button: Button,
 }
 
 impl ConfigGUI {
@@ -86,6 +92,9 @@ impl ConfigGUI {
             .show_title_buttons(false)
             .title_widget(&gtk::Label::new(Some("Hyprland Configuration")))
             .build();
+
+        let gear_button = Button::from_icon_name("emblem-system-symbolic");
+        header_bar.pack_start(&gear_button);
 
         let save_button = Button::with_label("Save");
         header_bar.pack_end(&save_button);
@@ -107,6 +116,27 @@ impl ConfigGUI {
         sidebar.set_stack(&stack);
         sidebar.set_width_request(200);
 
+        let popover = Popover::new();
+        popover.set_parent(&gear_button);
+
+        let popover_box = Box::new(Orientation::Vertical, 5);
+        popover_box.set_margin_top(5);
+        popover_box.set_margin_bottom(5);
+        popover_box.set_margin_start(5);
+        popover_box.set_margin_end(5);
+
+        let load_config_button = Button::with_label("Load HyprGUI Config");
+        let save_config_button = Button::with_label("Save HyprGUI Config");
+
+        popover_box.append(&load_config_button);
+        popover_box.append(&save_config_button);
+
+        popover.set_child(Some(&popover_box));
+
+        gear_button.connect_clicked(move |_| {
+            popover.popup();
+        });
+
         ConfigGUI {
             window,
             config_widgets,
@@ -115,6 +145,151 @@ impl ConfigGUI {
             changed_options: Rc::new(RefCell::new(HashMap::new())),
             stack,
             sidebar,
+            gear_button,
+            load_config_button,
+            save_config_button,
+        }
+    }
+
+    pub fn setup_config_buttons(gui: Rc<RefCell<ConfigGUI>>) {
+        let gui_clone = gui.clone();
+        gui.borrow().load_config_button.connect_clicked(move |_| {
+            let gui = gui_clone.clone();
+            MainContext::default().spawn_local(clone!(@strong gui => async move {
+                let file_chooser = gtk::FileChooserDialog::new(
+                    Some("Load HyprGUI Config"),
+                    Some(&gui.borrow().window),
+                    gtk::FileChooserAction::Open,
+                    &[("Cancel", gtk::ResponseType::Cancel), ("Open", gtk::ResponseType::Accept)]
+                );
+
+                if file_chooser.run_future().await == gtk::ResponseType::Accept {
+                    if let Some(file) = file_chooser.file() {
+                        if let Some(path) = file.path() {
+                            gui.borrow_mut().load_hyprgui_config(&path);
+                        }
+                    }
+                }
+                file_chooser.close();
+            }));
+        });
+
+        let gui_clone = gui.clone();
+        gui.borrow().save_config_button.connect_clicked(move |_| {
+            let gui = gui_clone.clone();
+            MainContext::default().spawn_local(clone!(@strong gui => async move {
+                let file_chooser = gtk::FileChooserDialog::new(
+                    Some("Save HyprGUI Config"),
+                    Some(&gui.borrow().window),
+                    gtk::FileChooserAction::Save,
+                    &[("Cancel", gtk::ResponseType::Cancel), ("Save", gtk::ResponseType::Accept)]
+                );
+
+                file_chooser.set_current_name("hyprgui_config.json");
+
+                if file_chooser.run_future().await == gtk::ResponseType::Accept {
+                    if let Some(file) = file_chooser.file() {
+                        if let Some(path) = file.path() {
+                            gui.borrow_mut().save_hyprgui_config(&path);
+                        }
+                    }
+                }
+                file_chooser.close();
+            }));
+        });
+    }
+
+    fn load_hyprgui_config(&mut self, path: &PathBuf) {
+        match fs::read_to_string(path) {
+            Ok(content) => {
+                if let Ok(config) = serde_json::from_str::<HashMap<String, String>>(&content) {
+                    for (key, value) in config {
+                        let parts: Vec<&str> = key.split(':').collect();
+                        if parts.len() == 2 {
+                            let category = parts[0].to_string();
+                            let name = parts[1].to_string();
+                            if let Some(widget) = self.config_widgets.get(&category) {
+                                if let Some(option_widget) = widget.options.get(&name) {
+                                    self.set_widget_value(option_widget, &value);
+                                    self.changed_options
+                                        .borrow_mut()
+                                        .insert((category, name), value);
+                                }
+                            }
+                        }
+                    }
+                    self.custom_info_popup("Config Loaded", "HyprGUI configuration loaded successfully.", false);
+                } else {
+                    self.custom_error_popup("Invalid Config", "Failed to parse the configuration file.", false);
+                }
+            }
+            Err(e) => {
+                self.custom_error_popup(
+                    "Loading Failed",
+                    &format!("Failed to read the configuration file: {}", e),
+                    false,
+                );
+            }
+        }
+    }
+
+    fn save_hyprgui_config(&mut self, path: &PathBuf) {
+        let config: HashMap<String, String> = self
+            .changed_options
+            .borrow()
+            .iter()
+            .map(|((category, name), value)| (format!("{}:{}", category, name), value.clone()))
+            .collect();
+
+        match serde_json::to_string_pretty(&config) {
+            Ok(json) => match fs::write(path, json) {
+                Ok(_) => {
+                    self.custom_info_popup("Config Saved", "HyprGUI configuration saved successfully.", false);
+                }
+                Err(e) => {
+                    self.custom_error_popup(
+                        "Saving Failed",
+                        &format!("Failed to write the configuration file: {}", e),
+                        false,
+                    );
+                }
+            },
+            Err(e) => {
+                self.custom_error_popup(
+                    "Serialization Failed",
+                    &format!("Failed to serialize the configuration: {}", e),
+                    false,
+                );
+            }
+        }
+    }
+
+    fn set_widget_value(&self, widget: &Widget, value: &str) {
+        if let Some(spin_button) = widget.downcast_ref::<SpinButton>() {
+            if let Ok(float_value) = value.parse::<f64>() {
+                spin_button.set_value(float_value);
+            }
+        } else if let Some(entry) = widget.downcast_ref::<Entry>() {
+            entry.set_text(value);
+        } else if let Some(switch) = widget.downcast_ref::<Switch>() {
+            switch.set_active(value == "true");
+        } else if let Some(color_button) = widget.downcast_ref::<ColorButton>() {
+            let dummy_config = HyprlandConfig::new();
+            if let Some((red, green, blue, alpha)) = dummy_config.parse_color(value) {
+                color_button.set_rgba(&gdk::RGBA::new(red, green, blue, alpha));
+            }
+        } else if let Some(dropdown) = widget.downcast_ref::<DropDown>() {
+            let model = dropdown.model().unwrap();
+            for i in 0..model.n_items() {
+                if let Some(item) = model.item(i) {
+                    if let Some(string_object) = item.downcast_ref::<gtk::StringObject>() {
+                        if string_object.string() == value {
+                            dropdown.set_selected(i);
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 

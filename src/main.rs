@@ -17,6 +17,7 @@ fn main() {
 
 fn build_ui(app: &Application) {
     let gui = Rc::new(RefCell::new(gui::ConfigGUI::new(app)));
+    gui::ConfigGUI::setup_config_buttons(gui.clone());
 
     let config_path_full = get_config_path();
 
