@@ -1130,7 +1130,7 @@ impl ConfigWidget {
                     &mut options,
                     "follow_mouse",
                     "Follow Mouse",
-                    "Specify if and how cursor movement should affect window focus. See the note below. [0/1/2/3]",
+                    "Specify if and how cursor movement should affect window focus. 0 - Cursor movement will not change focus, 1 - Cursor movement will always change focus to the window under the cursor, 2 - Cursor focus will be detached from keyboard focus, 3 - Cursor focus will be completely separate from keyboard focus. [0/1/2/3]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1158,14 +1158,14 @@ impl ConfigWidget {
                     &mut options,
                     "focus_on_close",
                     "Focus on Close",
-                    "Controls the window focus behavior when a window is closed. When set to 0, focus will shift to the next window candidate. When set to 1, focus will shift to the window under the cursor. [0/1]",
+                    "Controls the window focus behavior when a window is closed. 0 - focus will shift to the next window candidate, 1 - focus will shift to the window under the cursor. [0/1]",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "float_switch_override_focus",
                     "Float Switch Override Focus",
-                    "If enabled (1 or 2), focus will change to the window under the cursor when changing from tiled-to-floating and vice versa. If 2, focus will also follow mouse on float-to-float switches.",
+                    "If enabled, focus will change to the window under the cursor when changing from tiled-to-floating and vice versa. 0 - disabled, 1 - enabled, 2 - focus will also follow mouse on float-to-float switches. [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1347,14 +1347,14 @@ impl ConfigWidget {
                     &mut options,
                     "off_window_axis_events",
                     "Off Window Axis Events",
-                    "Handles axis events around (gaps/border for tiled, dragarea/border for floated) a focused window. 0 ignores axis events 1 sends out-of-bound coordinates 2 fakes pointer coordinates to the closest point inside the window 3 warps the cursor to the closest point inside the window",
+                    "Handles axis events around a focused window. 0 - ignores axis events, 1 - sends out-of-bound coordinates, 2 - fakes pointer coordinates to the closest point inside the window, 3 - warps the cursor to the closest point inside the window [0/1/2/3]",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "emulate_discrete_scroll",
                     "Emulate Discrete Scroll",
-                    "Emulates discrete scrolling from high resolution scrolling events. 0 disables it, 1 enables handling of non-standard events only, and 2 force enables all scroll wheel events to be handled",
+                    "Emulates discrete scrolling from high resolution scrolling events. 0 - disables it, 1 - enables handling of non-standard events only, 2 - force enables all scroll wheel events to be handled [0/1/2]",
                 );
             }
             "gestures" => {
@@ -1497,7 +1497,7 @@ impl ConfigWidget {
                     &mut options,
                     "drag_into_group",
                     "Drag Into Group",
-                    "whether dragging a window into a unlocked group will merge them. Options: 0 (disabled), 1 (enabled), 2 (only when dragging into the groupbar)",
+                    "whether dragging a window into a unlocked group will merge them. 0 - disabled, 1 - enabled, 2 - only when dragging into the groupbar [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1693,7 +1693,7 @@ impl ConfigWidget {
                     &mut options,
                     "force_default_wallpaper",
                     "Force Default Wallpaper",
-                    "Enforce any of the 3 default wallpapers. Setting this to 0 or 1 disables the anime background. -1 means \"random\". [-1/0/1/2]",
+                    "Enforce any of the 3 default wallpapers. -1 - random, 0 or 1 - disables the anime background, 2 - enables anime background. [-1/0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1707,7 +1707,7 @@ impl ConfigWidget {
                     &mut options,
                     "vrr",
                     "VRR",
-                    "controls the VRR (Adaptive Sync) of your monitors. 0 - off, 1 - on, 2 - fullscreen only [0/1/2]",
+                    "Controls the VRR (Adaptive Sync) of your monitors. 0 - off, 1 - on, 2 - fullscreen only [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1833,7 +1833,7 @@ impl ConfigWidget {
                     &mut options,
                     "new_window_takes_over_fullscreen",
                     "New Window Takes Over Fullscreen",
-                    "if there is a fullscreen or maximized window, decide whether a new tiled window opened should replace it, stay behind or disable the fullscreen/maximized state. 0 - behind, 1 - takes over, 2 - unfullscreen/unmaxize [0/1/2]",
+                    "If there is a fullscreen or maximized window, decide whether a new tiled window opened should replace it, stay behind or disable the fullscreen/maximized state. 0 - behind, 1 - takes over, 2 - unfullscreen/unmaxize [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1847,7 +1847,7 @@ impl ConfigWidget {
                     &mut options,
                     "initial_workspace_tracking",
                     "Initial Workspace Tracking",
-                    "if enabled, windows will open on the workspace they were invoked on. 0 - disabled, 1 - single-shot, 2 - persistent (all children too)",
+                    "If enabled, windows will open on the workspace they were invoked on. 0 - disabled, 1 - single-shot, 2 - persistent (all children too) [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1911,14 +1911,14 @@ impl ConfigWidget {
                     &mut options,
                     "workspace_center_on",
                     "Workspace Center On",
-                    "Whether switching workspaces should center the cursor on the workspace (0) or on the last active window for that workspace (1).",
+                    "Whether switching workspaces should center the cursor on the workspace (0) or on the last active window for that workspace (1). [0/1]",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "focus_preferred_method",
                     "Focus Preferred Method",
-                    "Sets the preferred focus finding method when using focuswindow/movewindow/etc with a direction.",
+                    "Sets the preferred focus finding method when using focuswindow/movewindow/etc with a direction. 0 - history (recent have priority), 1 - length (longer shared edges have priority) [0/1]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1997,7 +1997,7 @@ impl ConfigWidget {
                     &mut options,
                     "force_introspection",
                     "Force Introspection",
-                    "Forces introspection at all times. Introspection is aimed at reducing GPU usage in certain cases, but might cause graphical glitches on nvidia.",
+                    "Forces introspection at all times. Introspection is aimed at reducing GPU usage in certain cases, but might cause graphical glitches on nvidia. 0 - nothing, 1 - force always on, 2 - force always on if nvidia [0/1/2]",
                 );
             }
             "render" => {
@@ -2012,14 +2012,14 @@ impl ConfigWidget {
                     &mut options,
                     "explicit_sync",
                     "Explicit Sync",
-                    "Whether to enable explicit sync support.",
+                    "Whether to enable explicit sync support. 0 - no, 1 - yes, 2 - auto based on the gpu driver [0/1/2]",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "explicit_sync_kms",
                     "Explicit Sync KMS",
-                    "Whether to enable explicit sync support for the KMS layer.",
+                    "Whether to enable explicit sync support for the KMS layer. Requires explicit_sync to be enabled. 0 - no, 1 - yes, 2 - auto based on the gpu driver [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -2168,7 +2168,7 @@ impl ConfigWidget {
                     &mut options,
                     "damage_blink",
                     "Damage Blink",
-                    "Flash areas updated with damage tracking.",
+                    "(epilepsy warning!) Flash areas updated with damage tracking.",
                 );
                 Self::add_bool_option(
                     &container,
@@ -2189,7 +2189,7 @@ impl ConfigWidget {
                     &mut options,
                     "damage_tracking",
                     "Damage Tracking",
-                    "Redraw only the needed bits of the display.",
+                    "Redraw only the needed bits of the display. Do not change. 0 - none, 1 - monitor, 2 - full (default) [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -2217,14 +2217,14 @@ impl ConfigWidget {
                     &mut options,
                     "watchdog_timeout",
                     "Watchdog Timeout",
-                    "Sets the timeout in seconds for watchdog to abort processing of a signal of the main thread.",
+                    "Sets the timeout in seconds for watchdog to abort processing of a signal of the main thread. Set to 0 to disable.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "disable_scale_checks",
                     "Disable Scale Checks",
-                    "Disables verification of the scale factors.",
+                    "Disables verification of the scale factors. Will result in pixel alignment and rounding errors.",
                 );
                 Self::add_int_option(
                     &container,
@@ -2238,7 +2238,7 @@ impl ConfigWidget {
                     &mut options,
                     "error_position",
                     "Error Position",
-                    "Sets the position of the error bar. top - 0, bottom - 1",
+                    "Sets the position of the error bar. 0 - top, 1 - bottom [0/1]",
                 );
                 Self::add_bool_option(
                     &container,
