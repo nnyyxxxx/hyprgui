@@ -1497,7 +1497,7 @@ impl ConfigWidget {
                     &mut options,
                     "drag_into_group",
                     "Drag Into Group",
-                    "whether dragging a window into a unlocked group will merge them. Options: 0 (disabled), 1 (enabled), 2 (only when dragging into the groupbar)",
+                    "whether dragging a window into a unlocked group will merge them. 0 - disabled, 1 - enabled, 2 - only when dragging into the groupbar [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -1997,7 +1997,7 @@ impl ConfigWidget {
                     &mut options,
                     "force_introspection",
                     "Force Introspection",
-                    "Forces introspection at all times. Introspection is aimed at reducing GPU usage in certain cases, but might cause graphical glitches on nvidia.",
+                    "Forces introspection at all times. Introspection is aimed at reducing GPU usage in certain cases, but might cause graphical glitches on nvidia. 0 - nothing, 1 - force always on, 2 - force always on if nvidia [0/1/2]",
                 );
             }
             "render" => {
@@ -2012,14 +2012,14 @@ impl ConfigWidget {
                     &mut options,
                     "explicit_sync",
                     "Explicit Sync",
-                    "Whether to enable explicit sync support.",
+                    "Whether to enable explicit sync support. 0 - no, 1 - yes, 2 - auto based on the gpu driver [0/1/2]",
                 );
                 Self::add_int_option(
                     &container,
                     &mut options,
                     "explicit_sync_kms",
                     "Explicit Sync KMS",
-                    "Whether to enable explicit sync support for the KMS layer.",
+                    "Whether to enable explicit sync support for the KMS layer. Requires explicit_sync to be enabled. 0 - no, 1 - yes, 2 - auto based on the gpu driver [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -2168,7 +2168,7 @@ impl ConfigWidget {
                     &mut options,
                     "damage_blink",
                     "Damage Blink",
-                    "Flash areas updated with damage tracking.",
+                    "(epilepsy warning!) Flash areas updated with damage tracking.",
                 );
                 Self::add_bool_option(
                     &container,
@@ -2189,7 +2189,7 @@ impl ConfigWidget {
                     &mut options,
                     "damage_tracking",
                     "Damage Tracking",
-                    "Redraw only the needed bits of the display.",
+                    "Redraw only the needed bits of the display. Do not change. 0 - none, 1 - monitor, 2 - full (default) [0/1/2]",
                 );
                 Self::add_bool_option(
                     &container,
@@ -2217,14 +2217,14 @@ impl ConfigWidget {
                     &mut options,
                     "watchdog_timeout",
                     "Watchdog Timeout",
-                    "Sets the timeout in seconds for watchdog to abort processing of a signal of the main thread.",
+                    "Sets the timeout in seconds for watchdog to abort processing of a signal of the main thread. Set to 0 to disable.",
                 );
                 Self::add_bool_option(
                     &container,
                     &mut options,
                     "disable_scale_checks",
                     "Disable Scale Checks",
-                    "Disables verification of the scale factors.",
+                    "Disables verification of the scale factors. Will result in pixel alignment and rounding errors.",
                 );
                 Self::add_int_option(
                     &container,
@@ -2238,7 +2238,7 @@ impl ConfigWidget {
                     &mut options,
                     "error_position",
                     "Error Position",
-                    "Sets the position of the error bar. top - 0, bottom - 1",
+                    "Sets the position of the error bar. 0 - top, 1 - bottom [0/1]",
                 );
                 Self::add_bool_option(
                     &container,
