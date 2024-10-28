@@ -59,7 +59,7 @@ fn build_ui(app: &Application) {
         let gui_clone = gui.clone();
         copy_button.connect_clicked(move |_| {
             gui_clone.borrow_mut().custom_info_popup(
-                "Copyright (C) 2024 Nyx, Adam Perkowski",
+                "Copyright (C) 2024 HyprUtils",
                 "This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation, version 2 of
