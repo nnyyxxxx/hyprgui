@@ -1,15 +1,23 @@
 changelog:
   categories:
     - title: '🚀 Features'
-      label: 'enhancement'
+      labels:
+        - 'enhancement'
     - title: '🐛 Bug Fixes'
-      label: 'bug'
+      labels:
+        - 'bug'
     - title: '📚 Documentation'
-      label: 'documentation'
+      labels:
+        - 'documentation'
     - title: '🛠️ Refactoring'
-      label: 'refactor'
+      labels:
+        - 'refactor'
     - title: '🚀 Performance'
-      label: 'performance'
+      labels:
+        - 'performance'
+    - title: 'Other Changes'
+      labels:
+        - "*"
   exclude:
     labels:
       - 'skip-changelog'
