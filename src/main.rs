@@ -1,5 +1,5 @@
 use gtk::{prelude::*, Application, Button};
-use hyprparser::parse_config;
+use hyprparser::HyprlandConfig;
 use std::{cell::RefCell, env, fs, path::Path, path::PathBuf, rc::Rc};
 
 mod gui;
@@ -40,7 +40,8 @@ fn build_ui(app: &Application) {
                 String::new()
             }
         };
-        let parsed_config = parse_config(&config_str);
+        let mut parsed_config = HyprlandConfig::new();
+        parsed_config.parse(&config_str);
         gui.borrow_mut().load_config(&parsed_config);
 
         let gui_clone = gui.clone();
@@ -107,42 +108,45 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
         }
     };
 
-    let mut parsed_config = parse_config(&config_str);
+    let mut parsed_config = HyprlandConfig::new();
+    parsed_config.parse(&config_str);
+
     let changes = gui_ref.get_changes();
+    for ((category, name), value) in changes.borrow().iter() {
+        let entry = format!("{} = {}", name, value);
+        parsed_config.add_entry(category, &entry);
+    }
 
-    if !changes.borrow().is_empty() {
-        if !backup_path.exists() {
-            if let Err(e) = fs::copy(&path, &backup_path) {
-                gui_ref.custom_error_popup(
-                    "Backup failed",
-                    &format!("Failed to create backup: {}", e),
-                    true,
-                );
-                return;
-            }
+    if !backup_path.exists() {
+        if let Err(e) = fs::copy(&path, &backup_path) {
+            gui_ref.custom_error_popup(
+                "Backup failed",
+                &format!("Failed to create backup: {}", e),
+                true,
+            );
+            return;
         }
+    }
 
-        gui_ref.apply_changes(&mut parsed_config);
+    gui_ref.apply_changes(&mut parsed_config);
 
-        let updated_config_str = parsed_config.to_string();
+    let updated_config_str = parsed_config.to_string();
 
-        match fs::write(&path, updated_config_str) {
-            Ok(_) => println!("Configuration saved to: ~/{}", CONFIG_PATH),
-            Err(e) => {
-                gui_ref.custom_error_popup(
-                    "Saving failed",
-                    &format!("Failed to save the configuration: {}", e),
-                    true,
-                );
-            }
+    match fs::write(&path, updated_config_str) {
+        Ok(_) => println!("Configuration saved to: ~/{}", CONFIG_PATH),
+        Err(e) => {
+            gui_ref.custom_error_popup(
+                "Saving failed",
+                &format!("Failed to save the configuration: {}", e),
+                true,
+            );
         }
-    } else {
-        gui_ref.custom_info_popup("Saving failed", "No changes to save.", true);
     }
 }
 
 fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
     let mut gui_ref = gui.borrow_mut();
+    gui_ref.get_changes().borrow_mut().clear();
     let path = get_config_path();
     let backup_path = path.with_file_name(format!(
         "{}{}",
@@ -155,7 +159,8 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
             Ok(_) => {
                 println!("Configuration restored from backup");
                 if let Ok(config_str) = fs::read_to_string(&path) {
-                    let parsed_config = parse_config(&config_str);
+                    let mut parsed_config = HyprlandConfig::new();
+                    parsed_config.parse(&config_str);
                     gui_ref.load_config(&parsed_config);
 
                     gui_ref.get_changes().borrow_mut().clear();
