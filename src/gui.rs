@@ -53,10 +53,30 @@ impl ConfigWidget {
         container.set_margin_top(20);
         container.set_margin_bottom(20);
 
-        let title = Label::new(Some(&format!("{} Settings", category)));
-        title.set_markup(&format!("<b>{} Settings</b>", category));
-        title.set_margin_bottom(10);
-        container.append(&title);
+        let header_box = Box::new(Orientation::Vertical, 8);
+
+        let title = Label::new(Some(category));
+        title.set_halign(gtk::Align::Center);
+        title.set_hexpand(true);
+        title.set_markup(&format!(
+            "<span size='xx-large' weight='bold'>{}</span>",
+            category
+        ));
+
+        let description = Label::new(Some("Configure settings for this category"));
+        description.set_halign(gtk::Align::Center);
+        description.set_hexpand(true);
+        description.set_opacity(0.7);
+
+        header_box.append(&title);
+        header_box.append(&description);
+
+        container.append(&header_box);
+
+        let separator = gtk::Separator::new(Orientation::Horizontal);
+        separator.set_margin_top(10);
+        separator.set_margin_bottom(20);
+        container.append(&separator);
 
         scrolled_window.set_child(Some(&container));
 
@@ -67,11 +87,28 @@ impl ConfigWidget {
         }
     }
 
-    fn add_separator(&mut self, title: &str) {
-        let separator_label = Label::new(Some(&format!("--- {} ---", title.to_uppercase())));
-        separator_label.set_margin_top(15);
-        separator_label.set_margin_bottom(10);
-        self.container.append(&separator_label);
+    fn add_section(&mut self, title: &str, description: &str) {
+        let section_box = Box::new(Orientation::Vertical, 5);
+        section_box.set_margin_top(20);
+        section_box.set_margin_bottom(10);
+
+        let title_label = Label::new(Some(title));
+        title_label.set_halign(gtk::Align::Start);
+        title_label.set_markup(&format!("<span weight='bold'>{}</span>", title));
+
+        let desc_label = Label::new(Some(description));
+        desc_label.set_halign(gtk::Align::Start);
+        desc_label.set_opacity(0.7);
+
+        section_box.append(&title_label);
+        section_box.append(&desc_label);
+
+        let separator = gtk::Separator::new(Orientation::Horizontal);
+        separator.set_margin_top(5);
+        separator.set_margin_bottom(10);
+        section_box.append(&separator);
+
+        self.container.append(&section_box);
     }
 
     fn add_option(&mut self, name: String, widget: Widget, description: &str) {
@@ -203,16 +240,45 @@ impl ConfigGUI {
         ];
 
         if let Some(items) = descriptions.as_array() {
-            println!("Number of items: {}", items.len());
-
             for (group_name, categories) in category_groups.iter() {
                 let mut config_widget = ConfigWidget::new(group_name);
-
-                let header = Self::create_category_header(group_name);
-                config_widget.container.append(&header);
-
-                let mut current_category = String::new();
                 let mut has_items = false;
+
+                match *group_name {
+                    "General" => {
+                        config_widget.add_section("Layout", "Choose the default layout.");
+                        config_widget.add_section("Gaps", "Change gaps in & out, workspaces.");
+                        config_widget.add_section("Borders", "Size, resize, floating...");
+                    }
+                    "Decoration" => {
+                        config_widget
+                            .add_section("Window Decoration", "Configure window decorations.");
+                        config_widget.add_section("Blur", "Configure blur settings.");
+                        config_widget.add_section("Shadows", "Configure window shadows.");
+                    }
+                    "Input" => {
+                        config_widget.add_section("Mouse", "Configure mouse behavior.");
+                        config_widget.add_section("Keyboard", "Configure keyboard settings.");
+                        config_widget.add_section("Touchpad", "Configure touchpad behavior.");
+                    }
+                    "Animations" => {
+                        config_widget
+                            .add_section("Animation Settings", "Configure window animations.");
+                        config_widget.add_section("Bezier Curves", "Configure animation curves.");
+                    }
+                    "Groupbar" => {
+                        config_widget
+                            .add_section("Group Settings", "Configure window grouping behavior.");
+                        config_widget
+                            .add_section("Groupbar Display", "Configure the groupbar appearance.");
+                    }
+                    "Misc" => {
+                        config_widget.add_section("Miscellaneous", "Other Hyprland settings.");
+                        config_widget.add_section("Debug Options", "Configure debug settings.");
+                        config_widget.add_section("Keybinds", "Configure keyboard shortcuts.");
+                    }
+                    _ => {}
+                }
 
                 for item in items {
                     if let Some(obj) = item.as_object() {
@@ -229,11 +295,6 @@ impl ConfigGUI {
                             println!("Processing: category={}, name={}", category, name);
 
                             if categories.contains(&category) {
-                                if current_category != category {
-                                    config_widget.add_separator(&category.to_uppercase());
-                                    current_category = category.to_string();
-                                }
-
                                 let widget = match type_val {
                                     0 => Self::create_bool_option(name, description),
                                     1 => Self::create_int_option(name, description),
@@ -684,14 +745,6 @@ impl ConfigGUI {
             })
             .collect::<Vec<_>>()
             .join(" ")
-    }
-
-    fn create_category_header(title: &str) -> Widget {
-        let label = Label::new(Some(&format!("--- {} ---", title.to_uppercase())));
-        label.set_margin_top(10);
-        label.set_margin_bottom(10);
-        label.add_css_class("category-header");
-        label.upcast()
     }
 }
 
