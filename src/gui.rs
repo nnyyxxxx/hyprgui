@@ -21,61 +21,6 @@ pub enum WidgetType {
     DropDown(DropDown),
 }
 
-fn add_dropdown_option(
-    container: &Box,
-    options: &mut HashMap<String, WidgetType>,
-    name: &str,
-    label: &str,
-    description: &str,
-    items: &[&str],
-) {
-    let hbox = Box::new(Orientation::Horizontal, 10);
-    hbox.set_margin_start(10);
-    hbox.set_margin_end(10);
-    hbox.set_margin_top(5);
-    hbox.set_margin_bottom(5);
-
-    let label_box = Box::new(Orientation::Horizontal, 5);
-    label_box.set_hexpand(true);
-
-    let label_widget = Label::new(Some(label));
-    label_widget.set_halign(gtk::Align::Start);
-
-    let tooltip_button = Button::new();
-    let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
-    tooltip_button.set_child(Some(&question_mark_icon));
-    tooltip_button.set_has_frame(false);
-
-    let popover = Popover::new();
-    let description_label = Label::new(Some(description));
-    description_label.set_margin_top(5);
-    description_label.set_margin_bottom(5);
-    description_label.set_margin_start(5);
-    description_label.set_margin_end(5);
-    popover.set_child(Some(&description_label));
-    popover.set_position(gtk::PositionType::Right);
-
-    tooltip_button.connect_clicked(move |button| {
-        popover.set_parent(button);
-        popover.popup();
-    });
-
-    label_box.append(&label_widget);
-    label_box.append(&tooltip_button);
-
-    let string_list = StringList::new(items);
-    let dropdown = DropDown::new(Some(string_list), None::<gtk::Expression>);
-    dropdown.set_halign(gtk::Align::End);
-    dropdown.set_width_request(100);
-
-    hbox.append(&label_box);
-    hbox.append(&dropdown);
-
-    container.append(&hbox);
-
-    options.insert(name.to_string(), WidgetType::DropDown(dropdown.upcast()));
-}
-
 pub struct ConfigGUI {
     pub window: ApplicationWindow,
     pub config_widgets: HashMap<String, WidgetType>,
@@ -169,8 +114,8 @@ impl ConfigGUI {
         content_box.append(&stack);
 
         let mut config_widgets = HashMap::new();
-
         let descriptions = get_hyprctl_descriptions();
+
         if let Some(items) = descriptions.as_array() {
             for item in items {
                 if let (Some(value), Some(description), Some(data_type)) = (
@@ -178,60 +123,87 @@ impl ConfigGUI {
                     item.get("description").and_then(|v| v.as_str()),
                     item.get("type").and_then(|v| v.as_i64()),
                 ) {
-                    let (_category, name) = match value.split_once(':') {
-                        Some(parts) => parts,
+                    let (category, name) = match value.split_once(':') {
+                        Some((cat, name)) => (cat, name),
                         None => continue,
+                    };
+
+                    let category_box = if !stack.child_by_name(category).is_some() {
+                        let box_ = Box::new(Orientation::Vertical, 10);
+                        box_.set_margin_start(10);
+                        box_.set_margin_end(10);
+                        box_.set_margin_top(10);
+                        box_.set_margin_bottom(10);
+                        stack.add_titled(&box_, Some(category), category);
+                        box_
+                    } else {
+                        stack
+                            .child_by_name(category)
+                            .unwrap()
+                            .downcast::<Box>()
+                            .unwrap()
                     };
 
                     let (min, max, _step) = get_option_limits(name, description);
 
                     match data_type {
                         0 => Self::add_bool_option(
-                            &content_box,
+                            &category_box,
                             &mut config_widgets,
                             name,
                             name,
                             description,
                         ),
-                        1 => Self::add_int_option(
-                            &content_box,
-                            &mut config_widgets,
-                            name,
-                            name,
-                            description,
-                            min,
-                            max,
-                        ),
-                        2 => Self::add_float_option(
-                            &content_box,
-                            &mut config_widgets,
-                            name,
-                            name,
-                            description,
-                            min,
-                            max,
-                        ),
-                        3 => Self::add_string_option(
-                            &content_box,
-                            &mut config_widgets,
-                            name,
-                            name,
-                            description,
-                        ),
+                        1 | 2 | 3 => {
+                            if description.contains("[0.0 - 1.0]") || name.contains("opacity") {
+                                Self::add_int_option(
+                                    &category_box,
+                                    &mut config_widgets,
+                                    name,
+                                    name,
+                                    description,
+                                    min,
+                                    max,
+                                )
+                            } else {
+                                Self::add_string_option(
+                                    &category_box,
+                                    &mut config_widgets,
+                                    name,
+                                    name,
+                                    description,
+                                )
+                            }
+                        }
+                        4 | 6 => {
+                            let items = if let Some(data) = item.get("data") {
+                                if let Some(value_str) = data.get("value").and_then(|v| v.as_str())
+                                {
+                                    value_str.split(',').collect::<Vec<_>>()
+                                } else {
+                                    vec![]
+                                }
+                            } else {
+                                vec![]
+                            };
+
+                            if !items.is_empty() {
+                                Self::add_dropdown_option(
+                                    &category_box,
+                                    &mut config_widgets,
+                                    name,
+                                    name,
+                                    description,
+                                    &items,
+                                );
+                            }
+                        }
                         5 | 7 => Self::add_color_option(
-                            &content_box,
+                            &category_box,
                             &mut config_widgets,
                             name,
                             name,
                             description,
-                        ),
-                        4 => add_dropdown_option(
-                            &content_box,
-                            &mut config_widgets,
-                            name,
-                            name,
-                            description,
-                            &["option1", "option2"],
                         ),
                         _ => {}
                     }
@@ -308,23 +280,21 @@ impl ConfigGUI {
     }
 
     pub fn load_config(&mut self, config: &HyprlandConfig) {
-        for (name, widget) in &self.config_widgets {
-            if let Some(value) = self.find_value_in_config(config, name) {
-                self.set_widget_value(widget, value);
-            }
-        }
-    }
-
-    fn find_value_in_config(&self, config: &HyprlandConfig, key: &str) -> Option<String> {
-        for line in config.to_string().lines() {
-            let line = line.trim();
-            if let Some(value) = line.strip_prefix(key) {
-                if let Some(value) = value.trim().strip_prefix('=') {
-                    return Some(value.trim().to_string());
+        for category in self.get_sidebar_categories() {
+            for line in config.to_string().lines() {
+                let line = line.trim();
+                if let Some((name, value)) = line.split_once('=') {
+                    let name = name.trim();
+                    let value = value.trim();
+                    if let Some(widget) = self.config_widgets.get(name) {
+                        self.set_widget_value(widget, value.to_string());
+                        self.changed_options
+                            .borrow_mut()
+                            .insert((category.clone(), name.to_string()), value.to_string());
+                    }
                 }
             }
         }
-        None
     }
 
     pub fn get_changes(&self) -> &RefCell<HashMap<(String, String), String>> {
@@ -474,11 +444,15 @@ impl ConfigGUI {
         }
     }
 
-    pub fn apply_changes(&self, config: &mut HyprlandConfig) {
-        let changes = self.changed_options.borrow();
-        for ((category, name), value) in changes.iter() {
-            let entry = format!("{} = {}", name, value);
-            config.add_entry(category, &entry);
+    pub fn apply_changes(&mut self, config: &mut HyprlandConfig) {
+        if let Some(category) = self.get_current_category() {
+            let changes = self.changed_options.borrow();
+            for ((category_, name_), value) in changes.iter() {
+                if category_ == &category {
+                    let entry = format!("{} = {}", name_, value);
+                    config.add_entry(category_, &entry);
+                }
+            }
         }
     }
 
@@ -511,26 +485,6 @@ impl ConfigGUI {
     ) {
         let hbox = Box::new(Orientation::Horizontal, 10);
         let spinbutton = SpinButton::with_range(min, max, 1.0);
-        let label_widget = Label::new(Some(label));
-
-        hbox.append(&label_widget);
-        hbox.append(&spinbutton);
-        container.append(&hbox);
-
-        widgets.insert(name.to_string(), WidgetType::SpinButton(spinbutton));
-    }
-
-    fn add_float_option(
-        container: &Box,
-        widgets: &mut HashMap<String, WidgetType>,
-        name: &str,
-        label: &str,
-        _description: &str,
-        min: f64,
-        max: f64,
-    ) {
-        let hbox = Box::new(Orientation::Horizontal, 10);
-        let spinbutton = SpinButton::with_range(min, max, 0.1);
         let label_widget = Label::new(Some(label));
 
         hbox.append(&label_widget);
@@ -574,6 +528,50 @@ impl ConfigGUI {
         container.append(&hbox);
 
         widgets.insert(name.to_string(), WidgetType::ColorButton(colorbutton));
+    }
+
+    pub fn get_current_category(&self) -> Option<String> {
+        self.stack.visible_child_name().map(|name| name.to_string())
+    }
+
+    pub fn get_sidebar_categories(&self) -> Vec<String> {
+        let mut categories = Vec::new();
+        let pages = self.stack.pages();
+        for i in 0..pages.n_items() {
+            if let Some(item) = pages.item(i) {
+                if let Some(page) = item.downcast_ref::<gtk::StackPage>() {
+                    if let Some(title) = page.title() {
+                        categories.push(title.to_string());
+                    }
+                }
+            }
+        }
+        categories
+    }
+
+    pub fn update_layout(&self) {
+        self.content_box.set_visible(true);
+        self.sidebar.set_visible(true);
+    }
+
+    fn add_dropdown_option(
+        container: &Box,
+        widgets: &mut HashMap<String, WidgetType>,
+        name: &str,
+        label: &str,
+        _description: &str,
+        items: &[&str],
+    ) {
+        let hbox = Box::new(Orientation::Horizontal, 10);
+        let label_widget = Label::new(Some(label));
+        let string_list = StringList::new(items);
+        let dropdown = DropDown::builder().model(&string_list).build();
+
+        hbox.append(&label_widget);
+        hbox.append(&dropdown);
+        container.append(&hbox);
+
+        widgets.insert(name.to_string(), WidgetType::DropDown(dropdown));
     }
 }
 
@@ -654,16 +652,14 @@ fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
 
 fn get_hyprctl_descriptions() -> serde_json::Value {
     let output = Command::new("hyprctl")
-        .arg("descriptions")
+        .args(["descriptions", "-j"])
         .output()
         .expect("Failed to execute hyprctl");
 
-    match serde_json::from_slice(&output.stdout) {
+    let output_str = String::from_utf8_lossy(&output.stdout);
+
+    match serde_json::from_str(&output_str) {
         Ok(value) => value,
-        Err(e) => {
-            eprintln!("Failed to parse hyprctl output: {}", e);
-            eprintln!("Raw output: {}", String::from_utf8_lossy(&output.stdout));
-            serde_json::json!([])
-        }
+        Err(_) => serde_json::json!([]),
     }
 }

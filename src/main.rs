@@ -44,6 +44,8 @@ fn build_ui(app: &Application) {
         parsed_config.parse(&config_str);
         gui.borrow_mut().load_config(&parsed_config);
 
+        gui.borrow().update_layout();
+
         let gui_clone = gui.clone();
         gui.borrow().save_button.connect_clicked(move |_| {
             save_config_file(gui_clone.clone());
