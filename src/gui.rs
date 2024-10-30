@@ -1,7 +1,7 @@
 use gtk::{
     gdk, glib, prelude::*, Application, ApplicationWindow, Box, Button, ColorButton, DropDown,
-    Entry, HeaderBar, Image, Label, MessageDialog, Orientation, Popover, SpinButton, Stack,
-    StackSidebar, StringList, Switch,
+    Entry, HeaderBar, Image, Label, MessageDialog, Orientation, Popover, ScrolledWindow,
+    SpinButton, Stack, StackSidebar, StringList, Switch, Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -32,6 +32,83 @@ pub struct ConfigGUI {
     pub load_config_button: Button,
     pub save_config_button: Button,
     pub gear_menu: Rc<RefCell<Popover>>,
+}
+
+pub struct ConfigWidget {
+    options: HashMap<String, Widget>,
+    scrolled_window: ScrolledWindow,
+    container: Box,
+}
+
+impl ConfigWidget {
+    fn new(category: &str) -> Self {
+        let scrolled_window = ScrolledWindow::new();
+        scrolled_window.set_vexpand(true);
+        scrolled_window.set_propagate_natural_height(true);
+
+        let container = Box::new(Orientation::Vertical, 0);
+        container.set_margin_start(20);
+        container.set_margin_end(20);
+        container.set_margin_top(20);
+        container.set_margin_bottom(20);
+
+        let title = Label::new(Some(&format!("{} Settings", category)));
+        title.set_markup(&format!("<b>{} Settings</b>", category));
+        title.set_margin_bottom(10);
+        container.append(&title);
+
+        scrolled_window.set_child(Some(&container));
+
+        ConfigWidget {
+            options: HashMap::new(),
+            scrolled_window,
+            container,
+        }
+    }
+
+    fn add_option(&mut self, name: String, widget: Widget, description: &str) {
+        let hbox = Box::new(Orientation::Horizontal, 10);
+        hbox.set_margin_start(10);
+        hbox.set_margin_end(10);
+        hbox.set_margin_top(5);
+        hbox.set_margin_bottom(5);
+
+        let label_box = Box::new(Orientation::Horizontal, 5);
+        label_box.set_hexpand(true);
+
+        let label = Label::new(Some(&name.replace('_', " ")));
+        label.set_halign(gtk::Align::Start);
+
+        let tooltip_button = Button::new();
+        let question_mark_icon = Image::from_icon_name("dialog-question-symbolic");
+        tooltip_button.set_child(Some(&question_mark_icon));
+        tooltip_button.set_has_frame(false);
+
+        let popover = Popover::new();
+        let description_label = Label::new(Some(description));
+        description_label.set_margin_start(5);
+        description_label.set_margin_end(5);
+        description_label.set_margin_top(5);
+        description_label.set_margin_bottom(5);
+        description_label.set_wrap(true);
+        description_label.set_max_width_chars(50);
+        popover.set_child(Some(&description_label));
+        popover.set_position(gtk::PositionType::Right);
+
+        tooltip_button.connect_clicked(move |button| {
+            popover.set_parent(button);
+            popover.popup();
+        });
+
+        label_box.append(&label);
+        label_box.append(&tooltip_button);
+
+        hbox.append(&label_box);
+        hbox.append(&widget);
+
+        self.container.append(&hbox);
+        self.options.insert(name, widget);
+    }
 }
 
 impl ConfigGUI {
@@ -99,115 +176,93 @@ impl ConfigGUI {
 
         window.set_titlebar(Some(&header_bar));
 
-        let main_box = Box::new(Orientation::Vertical, 0);
-
-        let content_box = Box::new(Orientation::Horizontal, 0);
-        main_box.append(&content_box);
-
-        window.set_child(Some(&main_box));
-
+        let mut temp_widgets = HashMap::new();
         let stack = Stack::new();
         let sidebar = StackSidebar::new();
         sidebar.set_stack(&stack);
+        sidebar.set_width_request(200);
 
+        let descriptions = Self::get_hyprctl_descriptions();
+        println!("Got descriptions: {:?}", descriptions);
+
+        if let Some(items) = descriptions.as_array() {
+            println!("Number of items: {}", items.len());
+            for item in items {
+                if let Some(obj) = item.as_object() {
+                    if let (Some(value), Some(description), Some(type_val)) = (
+                        obj.get("value").and_then(|v| v.as_str()),
+                        obj.get("description").and_then(|v| v.as_str()),
+                        obj.get("type").and_then(|v| v.as_i64()),
+                    ) {
+                        println!("Processing: {} - {}", value, description);
+                        let (category, name) = match value.split_once(':') {
+                            Some((cat, name)) => (cat.trim(), name.trim()),
+                            None => (value.trim(), value.trim()),
+                        };
+
+                        let widget = match type_val {
+                            0 => Self::create_bool_option(name, description),
+                            1 => Self::create_int_option(name, description),
+                            2 => Self::create_float_option(name, description),
+                            3 => Self::create_string_option(name, description),
+                            4 => Self::create_color_option(name, description),
+                            6 => {
+                                if let Some(data) = obj.get("data").and_then(|d| d.get("value")) {
+                                    if let Some(options_str) = data.as_str() {
+                                        let options: Vec<&str> = options_str.split(',').collect();
+                                        Self::create_dropdown_option(name, description, &options)
+                                    } else {
+                                        continue;
+                                    }
+                                } else {
+                                    continue;
+                                }
+                            }
+                            _ => continue,
+                        };
+
+                        if !temp_widgets.contains_key(category) {
+                            println!("Creating new category: {}", category);
+                            let config_widget = ConfigWidget::new(category);
+                            stack.add_titled(
+                                &config_widget.scrolled_window,
+                                Some(category),
+                                category,
+                            );
+                            temp_widgets.insert(category.to_string(), config_widget);
+                        }
+
+                        if let Some(widget_container) = temp_widgets.get_mut(category) {
+                            widget_container.add_option(name.to_string(), widget, description);
+                        }
+                    }
+                }
+            }
+        }
+
+        let content_box = Box::new(Orientation::Horizontal, 0);
         content_box.append(&sidebar);
         content_box.append(&stack);
 
+        window.set_child(Some(&content_box));
+
         let mut config_widgets = HashMap::new();
-        let descriptions = get_hyprctl_descriptions();
-
-        if let Some(items) = descriptions.as_array() {
-            for item in items {
-                if let (Some(value), Some(description), Some(data_type)) = (
-                    item.get("value").and_then(|v| v.as_str()),
-                    item.get("description").and_then(|v| v.as_str()),
-                    item.get("type").and_then(|v| v.as_i64()),
-                ) {
-                    let (category, name) = match value.split_once(':') {
-                        Some((cat, name)) => (cat, name),
-                        None => continue,
-                    };
-
-                    let category_box = if stack.child_by_name(category).is_none() {
-                        let box_ = Box::new(Orientation::Vertical, 10);
-                        box_.set_margin_start(10);
-                        box_.set_margin_end(10);
-                        box_.set_margin_top(10);
-                        box_.set_margin_bottom(10);
-                        stack.add_titled(&box_, Some(category), category);
-                        box_
-                    } else {
-                        stack
-                            .child_by_name(category)
-                            .unwrap()
-                            .downcast::<Box>()
-                            .unwrap()
-                    };
-
-                    let (min, max, _step) = get_option_limits(name, description);
-
-                    match data_type {
-                        0 => Self::add_bool_option(
-                            &category_box,
-                            &mut config_widgets,
-                            name,
-                            name,
-                            description,
-                        ),
-                        1..=3 => {
-                            if description.contains("[0.0 - 1.0]") || name.contains("opacity") {
-                                Self::add_int_option(
-                                    &category_box,
-                                    &mut config_widgets,
-                                    name,
-                                    name,
-                                    description,
-                                    min,
-                                    max,
-                                )
-                            } else {
-                                Self::add_string_option(
-                                    &category_box,
-                                    &mut config_widgets,
-                                    name,
-                                    name,
-                                    description,
-                                )
-                            }
-                        }
-                        4 | 6 => {
-                            let items = if let Some(data) = item.get("data") {
-                                if let Some(value_str) = data.get("value").and_then(|v| v.as_str())
-                                {
-                                    value_str.split(',').collect::<Vec<_>>()
-                                } else {
-                                    vec![]
-                                }
-                            } else {
-                                vec![]
-                            };
-
-                            if !items.is_empty() {
-                                Self::add_dropdown_option(
-                                    &category_box,
-                                    &mut config_widgets,
-                                    name,
-                                    name,
-                                    description,
-                                    &items,
-                                );
-                            }
-                        }
-                        5 | 7 => Self::add_color_option(
-                            &category_box,
-                            &mut config_widgets,
-                            name,
-                            name,
-                            description,
-                        ),
-                        _ => {}
-                    }
-                }
+        for (category, widget_container) in temp_widgets {
+            for (name, widget) in widget_container.options {
+                let widget_type = if widget.is::<Switch>() {
+                    WidgetType::Switch(widget.downcast::<Switch>().unwrap())
+                } else if widget.is::<SpinButton>() {
+                    WidgetType::SpinButton(widget.downcast::<SpinButton>().unwrap())
+                } else if widget.is::<Entry>() {
+                    WidgetType::Entry(widget.downcast::<Entry>().unwrap())
+                } else if widget.is::<ColorButton>() {
+                    WidgetType::ColorButton(widget.downcast::<ColorButton>().unwrap())
+                } else if widget.is::<DropDown>() {
+                    WidgetType::DropDown(widget.downcast::<DropDown>().unwrap())
+                } else {
+                    continue;
+                };
+                config_widgets.insert(format!("{}:{}", category, name), widget_type);
             }
         }
 
@@ -456,78 +511,55 @@ impl ConfigGUI {
         }
     }
 
-    fn add_bool_option(
-        container: &Box,
-        widgets: &mut HashMap<String, WidgetType>,
-        name: &str,
-        label: &str,
-        _description: &str,
-    ) {
-        let hbox = Box::new(Orientation::Horizontal, 10);
+    fn create_bool_option(name: &str, description: &str) -> Widget {
         let switch = Switch::new();
-        let label_widget = Label::new(Some(label));
-
-        hbox.append(&label_widget);
-        hbox.append(&switch);
-        container.append(&hbox);
-
-        widgets.insert(name.to_string(), WidgetType::Switch(switch));
+        switch.set_tooltip_text(Some(&format!("{}: {}", name, description)));
+        switch.set_halign(gtk::Align::End);
+        switch.set_valign(gtk::Align::Center);
+        switch.upcast()
     }
 
-    fn add_int_option(
-        container: &Box,
-        widgets: &mut HashMap<String, WidgetType>,
-        name: &str,
-        label: &str,
-        _description: &str,
-        min: f64,
-        max: f64,
-    ) {
-        let hbox = Box::new(Orientation::Horizontal, 10);
-        let spinbutton = SpinButton::with_range(min, max, 1.0);
-        let label_widget = Label::new(Some(label));
-
-        hbox.append(&label_widget);
-        hbox.append(&spinbutton);
-        container.append(&hbox);
-
-        widgets.insert(name.to_string(), WidgetType::SpinButton(spinbutton));
+    fn create_int_option(name: &str, description: &str) -> Widget {
+        let (min, max, step) = get_option_limits(name, description);
+        let spin_button = SpinButton::with_range(min, max, step);
+        spin_button.set_tooltip_text(Some(&format!("{}: {}", name, description)));
+        spin_button.set_digits(0);
+        spin_button.set_halign(gtk::Align::End);
+        spin_button.set_width_request(100);
+        spin_button.upcast()
     }
 
-    fn add_string_option(
-        container: &Box,
-        widgets: &mut HashMap<String, WidgetType>,
-        name: &str,
-        label: &str,
-        _description: &str,
-    ) {
-        let hbox = Box::new(Orientation::Horizontal, 10);
+    fn create_float_option(name: &str, description: &str) -> Widget {
+        let (min, max, step) = get_option_limits(name, description);
+        let spin_button = SpinButton::with_range(min, max, step);
+        spin_button.set_digits(2);
+        spin_button.set_halign(gtk::Align::End);
+        spin_button.set_width_request(100);
+        spin_button.upcast()
+    }
+
+    fn create_string_option(name: &str, description: &str) -> Widget {
         let entry = Entry::new();
-        let label_widget = Label::new(Some(label));
-
-        hbox.append(&label_widget);
-        hbox.append(&entry);
-        container.append(&hbox);
-
-        widgets.insert(name.to_string(), WidgetType::Entry(entry));
+        entry.set_tooltip_text(Some(&format!("{}: {}", name, description)));
+        entry.set_halign(gtk::Align::End);
+        entry.set_width_request(100);
+        entry.upcast()
     }
 
-    fn add_color_option(
-        container: &Box,
-        widgets: &mut HashMap<String, WidgetType>,
-        name: &str,
-        label: &str,
-        _description: &str,
-    ) {
-        let hbox = Box::new(Orientation::Horizontal, 10);
-        let colorbutton = ColorButton::new();
-        let label_widget = Label::new(Some(label));
+    fn create_color_option(name: &str, description: &str) -> Widget {
+        let color_button = ColorButton::new();
+        color_button.set_tooltip_text(Some(&format!("{}: {}", name, description)));
+        color_button.set_halign(gtk::Align::End);
+        color_button.upcast()
+    }
 
-        hbox.append(&label_widget);
-        hbox.append(&colorbutton);
-        container.append(&hbox);
-
-        widgets.insert(name.to_string(), WidgetType::ColorButton(colorbutton));
+    fn create_dropdown_option(name: &str, description: &str, options: &[&str]) -> Widget {
+        let string_list = StringList::new(options);
+        let dropdown = DropDown::new(Some(string_list), None::<gtk::Expression>);
+        dropdown.set_tooltip_text(Some(&format!("{}: {}", name, description)));
+        dropdown.set_halign(gtk::Align::End);
+        dropdown.set_width_request(100);
+        dropdown.upcast()
     }
 
     pub fn get_current_category(&self) -> Option<String> {
@@ -554,24 +586,18 @@ impl ConfigGUI {
         self.sidebar.set_visible(true);
     }
 
-    fn add_dropdown_option(
-        container: &Box,
-        widgets: &mut HashMap<String, WidgetType>,
-        name: &str,
-        label: &str,
-        _description: &str,
-        items: &[&str],
-    ) {
-        let hbox = Box::new(Orientation::Horizontal, 10);
-        let label_widget = Label::new(Some(label));
-        let string_list = StringList::new(items);
-        let dropdown = DropDown::builder().model(&string_list).build();
+    fn get_hyprctl_descriptions() -> serde_json::Value {
+        let output = Command::new("hyprctl")
+            .arg("descriptions")
+            .arg("-j")
+            .output()
+            .expect("Failed to execute hyprctl");
 
-        hbox.append(&label_widget);
-        hbox.append(&dropdown);
-        container.append(&hbox);
-
-        widgets.insert(name.to_string(), WidgetType::DropDown(dropdown));
+        let json_str = String::from_utf8_lossy(&output.stdout);
+        serde_json::from_str(&json_str).unwrap_or_else(|e| {
+            println!("Failed to parse JSON: {}", e);
+            serde_json::json!([])
+        })
     }
 }
 
@@ -647,19 +673,5 @@ fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
                 (0.0, 50.0, 1.0)
             }
         }
-    }
-}
-
-fn get_hyprctl_descriptions() -> serde_json::Value {
-    let output = Command::new("hyprctl")
-        .args(["descriptions", "-j"])
-        .output()
-        .expect("Failed to execute hyprctl");
-
-    let output_str = String::from_utf8_lossy(&output.stdout);
-
-    match serde_json::from_str(&output_str) {
-        Ok(value) => value,
-        Err(_) => serde_json::json!([]),
     }
 }
