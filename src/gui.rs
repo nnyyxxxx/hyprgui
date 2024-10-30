@@ -594,7 +594,9 @@ impl ConfigGUI {
             .expect("Failed to execute hyprctl");
 
         let json_str = String::from_utf8_lossy(&output.stdout);
-        serde_json::from_str(&json_str).unwrap_or_else(|e| {
+        let trimmed_json = json_str.trim_matches('{').trim_matches('}');
+        
+        serde_json::from_str(&format!("[{trimmed_json}]")).unwrap_or_else(|e| {
             println!("Failed to parse JSON: {}", e);
             serde_json::json!([])
         })
