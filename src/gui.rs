@@ -67,6 +67,13 @@ impl ConfigWidget {
         }
     }
 
+    fn add_separator(&mut self, title: &str) {
+        let separator_label = Label::new(Some(&format!("--- {} ---", title.to_uppercase())));
+        separator_label.set_margin_top(15);
+        separator_label.set_margin_bottom(10);
+        self.container.append(&separator_label);
+    }
+
     fn add_option(&mut self, name: String, widget: Widget, description: &str) {
         let hbox = Box::new(Orientation::Horizontal, 10);
         hbox.set_margin_start(10);
@@ -186,57 +193,85 @@ impl ConfigGUI {
         let descriptions = Self::get_hyprctl_descriptions();
         println!("Got descriptions: {:?}", descriptions);
 
+        let category_groups = [
+            ("General", vec!["general", "dwindle", "master"]),
+            ("Decoration", vec!["decoration", "blur"]),
+            ("Input", vec!["input", "touchpad", "tablet", "keyboard"]),
+            ("Animations", vec!["animations", "bezier"]),
+            ("Groupbar", vec!["group", "groupbar"]),
+            ("Misc", vec!["misc", "debug", "binds"]),
+        ];
+
         if let Some(items) = descriptions.as_array() {
             println!("Number of items: {}", items.len());
-            for item in items {
-                if let Some(obj) = item.as_object() {
-                    if let (Some(value), Some(description), Some(type_val)) = (
-                        obj.get("value").and_then(|v| v.as_str()),
-                        obj.get("description").and_then(|v| v.as_str()),
-                        obj.get("type").and_then(|v| v.as_i64()),
-                    ) {
-                        println!("Processing: {} - {}", value, description);
-                        let (category, name) = match value.split_once(':') {
-                            Some((cat, name)) => (cat.trim(), name.trim()),
-                            None => (value.trim(), value.trim()),
-                        };
 
-                        let widget = match type_val {
-                            0 => Self::create_bool_option(name, description),
-                            1 => Self::create_int_option(name, description),
-                            2 => Self::create_float_option(name, description),
-                            3 => Self::create_string_option(name, description),
-                            4 => Self::create_color_option(name, description),
-                            6 => {
-                                if let Some(data) = obj.get("data").and_then(|d| d.get("value")) {
-                                    if let Some(options_str) = data.as_str() {
-                                        let options: Vec<&str> = options_str.split(',').collect();
-                                        Self::create_dropdown_option(name, description, &options)
-                                    } else {
-                                        continue;
-                                    }
-                                } else {
-                                    continue;
+            for (group_name, categories) in category_groups.iter() {
+                let mut config_widget = ConfigWidget::new(group_name);
+
+                let header = Self::create_category_header(group_name);
+                config_widget.container.append(&header);
+
+                let mut current_category = String::new();
+                let mut has_items = false;
+
+                for item in items {
+                    if let Some(obj) = item.as_object() {
+                        if let (Some(value), Some(description), Some(type_val)) = (
+                            obj.get("value").and_then(|v| v.as_str()),
+                            obj.get("description").and_then(|v| v.as_str()),
+                            obj.get("type").and_then(|v| v.as_i64()),
+                        ) {
+                            let (category, name) = match value.split_once(':') {
+                                Some((cat, name)) => (cat.trim(), name.trim()),
+                                None => (value.trim(), value.trim()),
+                            };
+
+                            println!("Processing: category={}, name={}", category, name);
+
+                            if categories.contains(&category) {
+                                if current_category != category {
+                                    config_widget.add_separator(&category.to_uppercase());
+                                    current_category = category.to_string();
                                 }
+
+                                let widget = match type_val {
+                                    0 => Self::create_bool_option(name, description),
+                                    1 => Self::create_int_option(name, description),
+                                    2 => Self::create_float_option(name, description),
+                                    3 => Self::create_string_option(name, description),
+                                    4 => Self::create_color_option(name, description),
+                                    6 => {
+                                        if let Some(data) =
+                                            obj.get("data").and_then(|d| d.get("value"))
+                                        {
+                                            if let Some(options_str) = data.as_str() {
+                                                let options: Vec<&str> =
+                                                    options_str.split(',').collect();
+                                                Self::create_dropdown_option(
+                                                    name,
+                                                    description,
+                                                    &options,
+                                                )
+                                            } else {
+                                                continue;
+                                            }
+                                        } else {
+                                            continue;
+                                        }
+                                    }
+                                    _ => continue,
+                                };
+
+                                config_widget.add_option(name.to_string(), widget, description);
+                                has_items = true;
                             }
-                            _ => continue,
-                        };
-
-                        if !temp_widgets.contains_key(category) {
-                            println!("Creating new category: {}", category);
-                            let config_widget = ConfigWidget::new(category);
-                            stack.add_titled(
-                                &config_widget.scrolled_window,
-                                Some(category),
-                                category,
-                            );
-                            temp_widgets.insert(category.to_string(), config_widget);
-                        }
-
-                        if let Some(widget_container) = temp_widgets.get_mut(category) {
-                            widget_container.add_option(name.to_string(), widget, description);
                         }
                     }
+                }
+
+                if has_items {
+                    stack.add_titled(&config_widget.scrolled_window, Some(group_name), group_name);
+                    temp_widgets.insert(group_name.to_string(), config_widget);
                 }
             }
         }
@@ -514,7 +549,8 @@ impl ConfigGUI {
 
     fn create_bool_option(name: &str, description: &str) -> Widget {
         let switch = Switch::new();
-        switch.set_tooltip_text(Some(&format!("{}: {}", name, description)));
+        let display_name = Self::process_option_name(name);
+        switch.set_tooltip_text(Some(&format!("{}: {}", display_name, description)));
         switch.set_halign(gtk::Align::End);
         switch.set_valign(gtk::Align::Center);
         switch.upcast()
@@ -618,7 +654,10 @@ impl ConfigGUI {
         let array_json = format!("[{}]", valid_objects.join(","));
 
         match serde_json::from_str(&array_json) {
-            Ok(val) => val,
+            Ok(val) => {
+                println!("Successfully parsed {} objects", valid_objects.len());
+                val
+            }
             Err(e) => {
                 println!("Failed to parse JSON: {}", e);
                 println!(
@@ -629,6 +668,30 @@ impl ConfigGUI {
                 serde_json::json!([])
             }
         }
+    }
+
+    fn process_option_name(name: &str) -> String {
+        name.split(':')
+            .last()
+            .unwrap_or(name)
+            .split('_')
+            .map(|s| {
+                let mut chars = s.chars();
+                match chars.next() {
+                    Some(c) => c.to_uppercase().chain(chars).collect(),
+                    None => String::new(),
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+
+    fn create_category_header(title: &str) -> Widget {
+        let label = Label::new(Some(&format!("--- {} ---", title.to_uppercase())));
+        label.set_margin_top(10);
+        label.set_margin_bottom(10);
+        label.add_css_class("category-header");
+        label.upcast()
     }
 }
 
