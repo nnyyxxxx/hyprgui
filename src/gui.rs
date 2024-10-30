@@ -128,7 +128,7 @@ impl ConfigGUI {
                         None => continue,
                     };
 
-                    let category_box = if !stack.child_by_name(category).is_some() {
+                    let category_box = if stack.child_by_name(category).is_none() {
                         let box_ = Box::new(Orientation::Vertical, 10);
                         box_.set_margin_start(10);
                         box_.set_margin_end(10);
@@ -154,7 +154,7 @@ impl ConfigGUI {
                             name,
                             description,
                         ),
-                        1 | 2 | 3 => {
+                        1..=3 => {
                             if description.contains("[0.0 - 1.0]") || name.contains("opacity") {
                                 Self::add_int_option(
                                     &category_box,
