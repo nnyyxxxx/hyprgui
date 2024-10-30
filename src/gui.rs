@@ -231,12 +231,295 @@ impl ConfigGUI {
         println!("Got descriptions: {:?}", descriptions);
 
         let category_groups = [
-            ("General", vec!["general", "dwindle", "master"]),
-            ("Decoration", vec!["decoration", "blur"]),
-            ("Input", vec!["input", "touchpad", "tablet", "keyboard"]),
-            ("Animations", vec!["animations", "bezier"]),
-            ("Groupbar", vec!["group", "groupbar"]),
-            ("Misc", vec!["misc", "debug", "binds"]),
+            (
+                "General",
+                vec![
+                    ("Layout", vec!["general:layout"]),
+                    (
+                        "Gaps",
+                        vec![
+                            "general:gaps_in",
+                            "general:gaps_out",
+                            "general:gaps_workspaces",
+                        ],
+                    ),
+                    (
+                        "Borders",
+                        vec![
+                            "general:border_size",
+                            "general:no_border_on_floating",
+                            "general:col.active_border",
+                            "general:col.inactive_border",
+                            "general:col.nogroup_border",
+                            "general:col.nogroup_border_active",
+                        ],
+                    ),
+                    ("Focus", vec!["general:no_focus_fallback"]),
+                    (
+                        "Resize",
+                        vec![
+                            "general:resize_on_border",
+                            "general:extend_border_grab_area",
+                            "general:hover_icon_on_border",
+                            "general:resize_corner",
+                        ],
+                    ),
+                    ("Other", vec!["general:allow_tearing"]),
+                ],
+            ),
+            (
+                "Decoration",
+                vec![
+                    (
+                        "Window Decoration",
+                        vec![
+                            "decoration:rounding",
+                            "decoration:active_opacity",
+                            "decoration:inactive_opacity",
+                            "decoration:fullscreen_opacity",
+                            "decoration:dim_inactive",
+                            "decoration:dim_strength",
+                            "decoration:dim_special",
+                            "decoration:dim_around",
+                            "decoration:screen_shader",
+                        ],
+                    ),
+                    (
+                        "Blur",
+                        vec![
+                            "blur:enabled",
+                            "blur:size",
+                            "blur:passes",
+                            "blur:ignore_opacity",
+                            "blur:new_optimizations",
+                            "blur:xray",
+                            "blur:noise",
+                            "blur:contrast",
+                            "blur:brightness",
+                            "blur:vibrancy",
+                            "blur:vibrancy_darkness",
+                            "blur:special",
+                            "blur:popups",
+                            "blur:popups_ignorealpha",
+                        ],
+                    ),
+                    (
+                        "Shadows",
+                        vec![
+                            "decoration:drop_shadow",
+                            "decoration:shadow_range",
+                            "decoration:shadow_render_power",
+                            "decoration:shadow_ignore_window",
+                            "decoration:col.shadow",
+                            "decoration:col.shadow_inactive",
+                            "decoration:shadow_offset",
+                            "decoration:shadow_scale",
+                        ],
+                    ),
+                ],
+            ),
+            (
+                "Input",
+                vec![
+                    (
+                        "Mouse",
+                        vec![
+                            "input:sensitivity",
+                            "input:accel_profile",
+                            "input:force_no_accel",
+                            "input:left_handed",
+                            "input:scroll_method",
+                            "input:scroll_button",
+                            "input:natural_scroll",
+                            "input:follow_mouse",
+                            "input:mouse_refocus",
+                            "input:float_switch_override_focus",
+                        ],
+                    ),
+                    (
+                        "Keyboard",
+                        vec![
+                            "input:kb_model",
+                            "input:kb_layout",
+                            "input:kb_variant",
+                            "input:kb_options",
+                            "input:kb_rules",
+                            "input:kb_file",
+                            "input:numlock_by_default",
+                            "input:repeat_rate",
+                            "input:repeat_delay",
+                        ],
+                    ),
+                    (
+                        "Touchpad",
+                        vec![
+                            "input:touchpad:disable_while_typing",
+                            "input:touchpad:natural_scroll",
+                            "input:touchpad:scroll_factor",
+                            "input:touchpad:middle_button_emulation",
+                            "input:touchpad:tap_button_map",
+                            "input:touchpad:clickfinger_behavior",
+                            "input:touchpad:tap-to-click",
+                            "input:touchpad:drag_lock",
+                            "input:touchpad:tap-and-drag",
+                        ],
+                    ),
+                    (
+                        "Touch",
+                        vec![
+                            "input:touchdevice:transform",
+                            "input:touchdevice:output",
+                            "input:touchdevice:enabled",
+                        ],
+                    ),
+                    (
+                        "Tablet",
+                        vec![
+                            "input:tablet:transform",
+                            "input:tablet:output",
+                            "input:tablet:region_position",
+                            "input:tablet:region_size",
+                            "input:tablet:relative_input",
+                            "input:tablet:left_handed",
+                            "input:tablet:active_area_size",
+                            "input:tablet:active_area_position",
+                        ],
+                    ),
+                ],
+            ),
+            (
+                "Animations",
+                vec![
+                    (
+                        "Animation Settings",
+                        vec!["animations:enabled", "animations:first_launch_animation"],
+                    ),
+                    (
+                        "Gestures",
+                        vec![
+                            "gestures:workspace_swipe",
+                            "gestures:workspace_swipe_fingers",
+                            "gestures:workspace_swipe_distance",
+                            "gestures:workspace_swipe_invert",
+                            "gestures:workspace_swipe_min_speed_to_force",
+                            "gestures:workspace_swipe_cancel_ratio",
+                            "gestures:workspace_swipe_create_new",
+                            "gestures:workspace_swipe_forever",
+                        ],
+                    ),
+                ],
+            ),
+            (
+                "Layout",
+                vec![
+                    (
+                        "Dwindle",
+                        vec![
+                            "dwindle:pseudotile",
+                            "dwindle:force_split",
+                            "dwindle:preserve_split",
+                            "dwindle:smart_split",
+                            "dwindle:smart_resizing",
+                            "dwindle:permanent_direction_override",
+                            "dwindle:special_scale_factor",
+                            "dwindle:split_width_multiplier",
+                            "dwindle:no_gaps_when_only",
+                            "dwindle:use_active_for_splits",
+                            "dwindle:default_split_ratio",
+                        ],
+                    ),
+                    (
+                        "Master",
+                        vec![
+                            "master:allow_small_split",
+                            "master:special_scale_factor",
+                            "master:mfact",
+                            "master:new_status",
+                            "master:new_on_top",
+                            "master:orientation",
+                            "master:smart_resizing",
+                            "master:drop_at_cursor",
+                        ],
+                    ),
+                ],
+            ),
+            (
+                "Groups",
+                vec![
+                    (
+                        "Group Settings",
+                        vec![
+                            "group:insert_after_current",
+                            "group:focus_removed_window",
+                            "group:merge_groups_on_drag",
+                            "group:auto_group",
+                        ],
+                    ),
+                    (
+                        "Groupbar",
+                        vec![
+                            "group:groupbar:enabled",
+                            "group:groupbar:font_family",
+                            "group:groupbar:font_size",
+                            "group:groupbar:gradients",
+                            "group:groupbar:height",
+                            "group:groupbar:priority",
+                            "group:groupbar:render_titles",
+                            "group:groupbar:scrolling",
+                            "group:groupbar:text_color",
+                        ],
+                    ),
+                    (
+                        "Colors",
+                        vec![
+                            "group:groupbar:col.active",
+                            "group:groupbar:col.inactive",
+                            "group:groupbar:col.locked_active",
+                            "group:groupbar:col.locked_inactive",
+                        ],
+                    ),
+                ],
+            ),
+            (
+                "Misc",
+                vec![
+                    (
+                        "General",
+                        vec![
+                            "misc:disable_hyprland_logo",
+                            "misc:disable_splash_rendering",
+                            "misc:vfr",
+                            "misc:vrr",
+                            "misc:mouse_move_enables_dpms",
+                            "misc:key_press_enables_dpms",
+                        ],
+                    ),
+                    (
+                        "Window Behavior",
+                        vec![
+                            "misc:animate_manual_resizes",
+                            "misc:animate_mouse_windowdragging",
+                            "misc:focus_on_activate",
+                            "misc:mouse_move_focuses_monitor",
+                        ],
+                    ),
+                    (
+                        "Performance",
+                        vec!["misc:render_ahead_of_time", "misc:render_ahead_safezone"],
+                    ),
+                    (
+                        "Debug",
+                        vec![
+                            "debug:overlay",
+                            "debug:damage_blink",
+                            "debug:disable_logs",
+                            "debug:disable_time",
+                            "debug:damage_tracking",
+                            "debug:enable_stdout_logs",
+                        ],
+                    ),
+                ],
+            ),
         ];
 
         if let Some(items) = descriptions.as_array() {
@@ -244,87 +527,52 @@ impl ConfigGUI {
                 let mut config_widget = ConfigWidget::new(group_name);
                 let mut has_items = false;
 
-                match *group_name {
-                    "General" => {
-                        config_widget.add_section("Layout", "Choose the default layout.");
-                        config_widget.add_section("Gaps", "Change gaps in & out, workspaces.");
-                        config_widget.add_section("Borders", "Size, resize, floating...");
-                    }
-                    "Decoration" => {
-                        config_widget
-                            .add_section("Window Decoration", "Configure window decorations.");
-                        config_widget.add_section("Blur", "Configure blur settings.");
-                        config_widget.add_section("Shadows", "Configure window shadows.");
-                    }
-                    "Input" => {
-                        config_widget.add_section("Mouse", "Configure mouse behavior.");
-                        config_widget.add_section("Keyboard", "Configure keyboard settings.");
-                        config_widget.add_section("Touchpad", "Configure touchpad behavior.");
-                    }
-                    "Animations" => {
-                        config_widget
-                            .add_section("Animation Settings", "Configure window animations.");
-                        config_widget.add_section("Bezier Curves", "Configure animation curves.");
-                    }
-                    "Groupbar" => {
-                        config_widget
-                            .add_section("Group Settings", "Configure window grouping behavior.");
-                        config_widget
-                            .add_section("Groupbar Display", "Configure the groupbar appearance.");
-                    }
-                    "Misc" => {
-                        config_widget.add_section("Miscellaneous", "Other Hyprland settings.");
-                        config_widget.add_section("Debug Options", "Configure debug settings.");
-                        config_widget.add_section("Keybinds", "Configure keyboard shortcuts.");
-                    }
-                    _ => {}
-                }
+                for (category_name, options) in categories {
+                    config_widget.add_section(category_name, "Configure these settings");
 
-                for item in items {
-                    if let Some(obj) = item.as_object() {
-                        if let (Some(value), Some(description), Some(type_val)) = (
-                            obj.get("value").and_then(|v| v.as_str()),
-                            obj.get("description").and_then(|v| v.as_str()),
-                            obj.get("type").and_then(|v| v.as_i64()),
-                        ) {
-                            let (category, name) = match value.split_once(':') {
-                                Some((cat, name)) => (cat.trim(), name.trim()),
-                                None => (value.trim(), value.trim()),
-                            };
-
-                            println!("Processing: category={}, name={}", category, name);
-
-                            if categories.contains(&category) {
-                                let widget = match type_val {
-                                    0 => Self::create_bool_option(name, description),
-                                    1 => Self::create_int_option(name, description),
-                                    2 => Self::create_float_option(name, description),
-                                    3 => Self::create_string_option(name, description),
-                                    4 => Self::create_color_option(name, description),
-                                    6 => {
-                                        if let Some(data) =
-                                            obj.get("data").and_then(|d| d.get("value"))
-                                        {
-                                            if let Some(options_str) = data.as_str() {
-                                                let options: Vec<&str> =
-                                                    options_str.split(',').collect();
-                                                Self::create_dropdown_option(
-                                                    name,
-                                                    description,
-                                                    &options,
-                                                )
+                    for item in items {
+                        if let Some(obj) = item.as_object() {
+                            if let (Some(value), Some(description), Some(type_val)) = (
+                                obj.get("value").and_then(|v| v.as_str()),
+                                obj.get("description").and_then(|v| v.as_str()),
+                                obj.get("type").and_then(|v| v.as_i64()),
+                            ) {
+                                if options.contains(&value) {
+                                    let widget = match type_val {
+                                        0 => Self::create_bool_option(value, description),
+                                        1 => Self::create_int_option(value, description),
+                                        2 => Self::create_float_option(value, description),
+                                        3 => Self::create_string_option(value, description),
+                                        4 => Self::create_color_option(value, description),
+                                        6 => {
+                                            if let Some(data) =
+                                                obj.get("data").and_then(|d| d.get("value"))
+                                            {
+                                                if let Some(options_str) = data.as_str() {
+                                                    let options: Vec<&str> =
+                                                        options_str.split(',').collect();
+                                                    Self::create_dropdown_option(
+                                                        value,
+                                                        description,
+                                                        &options,
+                                                    )
+                                                } else {
+                                                    continue;
+                                                }
                                             } else {
                                                 continue;
                                             }
-                                        } else {
-                                            continue;
                                         }
-                                    }
-                                    _ => continue,
-                                };
+                                        _ => continue,
+                                    };
 
-                                config_widget.add_option(name.to_string(), widget, description);
-                                has_items = true;
+                                    config_widget.add_option(
+                                        value.to_string(),
+                                        widget,
+                                        description,
+                                    );
+                                    has_items = true;
+                                }
                             }
                         }
                     }
