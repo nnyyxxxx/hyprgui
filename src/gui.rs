@@ -5,6 +5,7 @@ use gtk::{
 };
 
 use hyprparser::HyprlandConfig;
+use regex::Regex;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
@@ -594,12 +595,40 @@ impl ConfigGUI {
             .expect("Failed to execute hyprctl");
 
         let json_str = String::from_utf8_lossy(&output.stdout);
-        let trimmed_json = json_str.trim_matches('{').trim_matches('}');
-        
-        serde_json::from_str(&format!("[{trimmed_json}]")).unwrap_or_else(|e| {
-            println!("Failed to parse JSON: {}", e);
-            serde_json::json!([])
-        })
+
+        let re = Regex::new(r#"\{[^{]*"value":[^{]*"description":[^{]*"type":[^{]*"flags":[^{]*"data":\s*\{[^}]*\}\s*\}"#).unwrap();
+
+        let valid_objects: Vec<_> = re
+            .find_iter(&json_str)
+            .filter_map(|m| {
+                let cleaned = m
+                    .as_str()
+                    .replace('\n', " ")
+                    .replace('\r', "")
+                    .replace('\t', " ")
+                    .replace("  ", " ");
+
+                match serde_json::from_str::<serde_json::Value>(&cleaned) {
+                    Ok(_) => Some(cleaned),
+                    Err(_) => None,
+                }
+            })
+            .collect();
+
+        let array_json = format!("[{}]", valid_objects.join(","));
+
+        match serde_json::from_str(&array_json) {
+            Ok(val) => val,
+            Err(e) => {
+                println!("Failed to parse JSON: {}", e);
+                println!(
+                    "First valid object: {}",
+                    valid_objects.first().unwrap_or(&String::from("none"))
+                );
+                println!("Number of valid objects: {}", valid_objects.len());
+                serde_json::json!([])
+            }
+        }
     }
 }
 
