@@ -120,6 +120,26 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
                 );
                 return;
             }
+
+            for sourced_path in &parsed_config.sourced_paths {
+                let sourced_backup = Path::new(sourced_path).with_file_name(format!(
+                    "{}{}",
+                    Path::new(sourced_path)
+                        .file_name()
+                        .unwrap()
+                        .to_str()
+                        .unwrap(),
+                    BACKUP_SUFFIX
+                ));
+                if let Err(e) = fs::copy(sourced_path, &sourced_backup) {
+                    gui_ref.custom_error_popup(
+                        "Backup failed",
+                        &format!("Failed to create backup for sourced file: {}", e),
+                        true,
+                    );
+                    return;
+                }
+            }
         }
 
         gui_ref.apply_changes(&mut parsed_config);
@@ -127,7 +147,7 @@ fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
         let updated_config_str = parsed_config.to_string();
 
         match fs::write(&path, updated_config_str) {
-            Ok(_) => println!("Configuration saved to: ~/{}", CONFIG_PATH),
+            Ok(_) => println!("Configuration saved successfully"),
             Err(e) => {
                 gui_ref.custom_error_popup(
                     "Saving failed",
@@ -151,13 +171,54 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
     ));
 
     if backup_path.exists() {
+        let config_str = match fs::read_to_string(&path) {
+            Ok(s) => s,
+            Err(e) => {
+                gui_ref.custom_error_popup(
+                    "Reading failed",
+                    &format!("Failed to read configuration: {}", e),
+                    true,
+                );
+                return;
+            }
+        };
+
+        let parsed_config = parse_config(&config_str);
+
+        for sourced_path in &parsed_config.sourced_paths {
+            let sourced_backup = Path::new(sourced_path).with_file_name(format!(
+                "{}{}",
+                Path::new(sourced_path)
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap(),
+                BACKUP_SUFFIX
+            ));
+            if sourced_backup.exists() {
+                if let Err(e) = fs::copy(&sourced_backup, sourced_path) {
+                    gui_ref.custom_error_popup(
+                        "Undo Failed",
+                        &format!("Failed to restore sourced file from backup: {}", e),
+                        true,
+                    );
+                    return;
+                }
+                if let Err(e) = fs::remove_file(&sourced_backup) {
+                    gui_ref.custom_error_popup(
+                        "Backup Deletion Failed",
+                        &format!("Failed to delete sourced backup file: {}", e),
+                        true,
+                    );
+                }
+            }
+        }
+
         match fs::copy(&backup_path, &path) {
             Ok(_) => {
-                println!("Configuration restored from backup");
                 if let Ok(config_str) = fs::read_to_string(&path) {
                     let parsed_config = parse_config(&config_str);
                     gui_ref.load_config(&parsed_config);
-
                     gui_ref.get_changes().borrow_mut().clear();
 
                     if let Err(e) = fs::remove_file(&backup_path) {
@@ -169,7 +230,7 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
                     } else {
                         gui_ref.custom_info_popup(
                             "Undo Successful",
-                            "Configuration restored from backup and backup file deleted.",
+                            "Configuration restored from backup and backup files deleted.",
                             true,
                         );
                     }
