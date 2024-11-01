@@ -2869,18 +2869,16 @@ impl ConfigWidget {
                     }
                 }
             }
-        } else {
-            if let Some(&(start, end)) = config.sections.get(category) {
-                if start < config.content.len() && end < config.content.len() {
-                    for line in &config.content[start..=end] {
-                        let trimmed = line.trim();
-                        if trimmed.starts_with(name)
-                            && trimmed[name.len()..].trim_start().starts_with('=')
-                        {
-                            if let Some(val) = line.split('=').nth(1) {
-                                value = val.trim().to_string();
-                                break;
-                            }
+        } else if let Some(&(start, end)) = config.sections.get(category) {
+            if start < config.content.len() && end < config.content.len() {
+                for line in &config.content[start..=end] {
+                    let trimmed = line.trim();
+                    if trimmed.starts_with(name)
+                        && trimmed[name.len()..].trim_start().starts_with('=')
+                    {
+                        if let Some(val) = line.split('=').nth(1) {
+                            value = val.trim().to_string();
+                            break;
                         }
                     }
                 }
