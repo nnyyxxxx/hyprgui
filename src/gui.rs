@@ -2836,16 +2836,51 @@ impl ConfigWidget {
 
     fn extract_value(&self, config: &HyprlandConfig, category: &str, name: &str) -> String {
         let mut value = String::new();
+        let parts: Vec<&str> = name.split(':').collect();
 
-        if let Some(&(start, end)) = config.sections.get(category) {
-            if start < config.content.len() && end < config.content.len() {
-                for line in &config.content[start..=end] {
-                    if line.trim().starts_with(name)
-                        && line.trim()[name.len()..].trim_start().starts_with('=')
-                    {
-                        if let Some(val) = line.split('=').nth(1) {
-                            value = val.trim().to_string();
-                            break;
+        if parts.len() > 1 {
+            if let Some(&(parent_start, parent_end)) = config.sections.get(category) {
+                if parent_start < config.content.len() && parent_end < config.content.len() {
+                    let subsection = format!("{} {{", parts[0]);
+                    let mut in_subsection = false;
+
+                    for line in &config.content[parent_start..=parent_end] {
+                        let trimmed = line.trim();
+
+                        if trimmed == subsection {
+                            in_subsection = true;
+                            continue;
+                        }
+
+                        if in_subsection {
+                            if trimmed == "}" {
+                                break;
+                            }
+
+                            if trimmed.starts_with(parts[1])
+                                && trimmed[parts[1].len()..].trim_start().starts_with('=')
+                            {
+                                if let Some(val) = trimmed.split('=').nth(1) {
+                                    value = val.trim().to_string();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            if let Some(&(start, end)) = config.sections.get(category) {
+                if start < config.content.len() && end < config.content.len() {
+                    for line in &config.content[start..=end] {
+                        let trimmed = line.trim();
+                        if trimmed.starts_with(name)
+                            && trimmed[name.len()..].trim_start().starts_with('=')
+                        {
+                            if let Some(val) = line.split('=').nth(1) {
+                                value = val.trim().to_string();
+                                break;
+                            }
                         }
                     }
                 }
@@ -2854,19 +2889,47 @@ impl ConfigWidget {
 
         if value.is_empty() {
             for idx in 0..config.sourced_content.len() {
-                if let Some(&(start, end)) = config
-                    .sourced_sections
-                    .get(&format!("{}_{}", category, idx))
-                {
+                let section_key = format!("{}_{}", category, idx);
+                if let Some(&(start, end)) = config.sourced_sections.get(&section_key) {
                     let sourced = &config.sourced_content[idx];
                     if start < sourced.len() && end < sourced.len() {
-                        for line in &sourced[start..=end] {
-                            if line.trim().starts_with(name)
-                                && line.trim()[name.len()..].trim_start().starts_with('=')
-                            {
-                                if let Some(val) = line.split('=').nth(1) {
-                                    value = val.trim().to_string();
-                                    break;
+                        if parts.len() > 1 {
+                            let subsection = format!("{} {{", parts[0]);
+                            let mut in_subsection = false;
+
+                            for line in &sourced[start..=end] {
+                                let trimmed = line.trim();
+
+                                if trimmed == subsection {
+                                    in_subsection = true;
+                                    continue;
+                                }
+
+                                if in_subsection {
+                                    if trimmed == "}" {
+                                        break;
+                                    }
+
+                                    if trimmed.starts_with(parts[1])
+                                        && trimmed[parts[1].len()..].trim_start().starts_with('=')
+                                    {
+                                        if let Some(val) = trimmed.split('=').nth(1) {
+                                            value = val.trim().to_string();
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            for line in &sourced[start..=end] {
+                                let trimmed = line.trim();
+                                if trimmed.starts_with(name)
+                                    && trimmed[name.len()..].trim_start().starts_with('=')
+                                {
+                                    if let Some(val) = line.split('=').nth(1) {
+                                        value = val.trim().to_string();
+                                        break;
+                                    }
                                 }
                             }
                         }
