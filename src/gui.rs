@@ -2852,7 +2852,7 @@ impl ConfigWidget {
 
         if value.is_empty() {
             if let Some(&(start, end)) = config.sourced_sections.get(category) {
-                for (idx, sourced) in config.sourced_content.iter().enumerate() {
+                for (_idx, sourced) in config.sourced_content.iter().enumerate() {
                     if start < sourced.len() && end < sourced.len() {
                         for line in &sourced[start..=end] {
                             if line.trim().starts_with(name) {
