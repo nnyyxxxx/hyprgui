@@ -388,7 +388,7 @@ checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "hyprgui"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "gtk4",
  "hyprparser",
@@ -399,9 +399,9 @@ dependencies = [
 
 [[package]]
 name = "hyprparser"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46892f8e8db7ea0bd736dc03534c07ff1a5f9ef9060a607109506fd8db9e6716"
+checksum = "ecb22ce27b35c02da62e85e26ab286dd3cfc51e7f05e3153edc874c667b68178"
 
 [[package]]
 name = "indexmap"
