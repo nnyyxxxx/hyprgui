@@ -2836,7 +2836,7 @@ impl ConfigWidget {
 
     fn extract_value(&self, config: &HyprlandConfig, category: &str, name: &str) -> String {
         let mut value = String::new();
-        
+
         if let Some(&(start, end)) = config.sections.get(category) {
             if start < config.content.len() && end < config.content.len() {
                 for line in &config.content[start..=end] {
