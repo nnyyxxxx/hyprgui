@@ -2840,7 +2840,9 @@ impl ConfigWidget {
         if let Some(&(start, end)) = config.sections.get(category) {
             if start < config.content.len() && end < config.content.len() {
                 for line in &config.content[start..=end] {
-                    if line.trim().starts_with(name) {
+                    if line.trim().starts_with(name)
+                        && line.trim()[name.len()..].trim_start().starts_with('=')
+                    {
                         if let Some(val) = line.split('=').nth(1) {
                             value = val.trim().to_string();
                             break;
@@ -2851,11 +2853,17 @@ impl ConfigWidget {
         }
 
         if value.is_empty() {
-            if let Some(&(start, end)) = config.sourced_sections.get(category) {
-                for (_idx, sourced) in config.sourced_content.iter().enumerate() {
+            for idx in 0..config.sourced_content.len() {
+                if let Some(&(start, end)) = config
+                    .sourced_sections
+                    .get(&format!("{}_{}", category, idx))
+                {
+                    let sourced = &config.sourced_content[idx];
                     if start < sourced.len() && end < sourced.len() {
                         for line in &sourced[start..=end] {
-                            if line.trim().starts_with(name) {
+                            if line.trim().starts_with(name)
+                                && line.trim()[name.len()..].trim_start().starts_with('=')
+                            {
                                 if let Some(val) = line.split('=').nth(1) {
                                     value = val.trim().to_string();
                                     break;
@@ -2863,9 +2871,9 @@ impl ConfigWidget {
                             }
                         }
                     }
-                    if !value.is_empty() {
-                        break;
-                    }
+                }
+                if !value.is_empty() {
+                    break;
                 }
             }
         }
