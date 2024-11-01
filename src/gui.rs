@@ -2834,17 +2834,42 @@ impl ConfigWidget {
         }
     }
 
-    fn extract_value(&self, config: &HyprlandConfig, _category: &str, name: &str) -> String {
-        let config_str = config.to_string();
-        for line in config_str.lines() {
-            if line.trim().starts_with(&format!("{} = ", name)) {
-                return line
-                    .split('=')
-                    .nth(1)
-                    .map(|s| s.trim().to_string())
-                    .unwrap_or_default();
+    fn extract_value(&self, config: &HyprlandConfig, category: &str, name: &str) -> String {
+        let mut value = String::new();
+        
+        if let Some(&(start, end)) = config.sections.get(category) {
+            if start < config.content.len() && end < config.content.len() {
+                for line in &config.content[start..=end] {
+                    if line.trim().starts_with(name) {
+                        if let Some(val) = line.split('=').nth(1) {
+                            value = val.trim().to_string();
+                            break;
+                        }
+                    }
+                }
             }
         }
-        String::new()
+
+        if value.is_empty() {
+            if let Some(&(start, end)) = config.sourced_sections.get(category) {
+                for (idx, sourced) in config.sourced_content.iter().enumerate() {
+                    if start < sourced.len() && end < sourced.len() {
+                        for line in &sourced[start..=end] {
+                            if line.trim().starts_with(name) {
+                                if let Some(val) = line.split('=').nth(1) {
+                                    value = val.trim().to_string();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if !value.is_empty() {
+                        break;
+                    }
+                }
+            }
+        }
+
+        value
     }
 }
