@@ -44,7 +44,12 @@ fn build_ui(app: &Application) {
         gui.borrow_mut().load_config(&parsed_config);
 
         let gui_clone = gui.clone();
-        gui.borrow().save_button.connect_clicked(move |_| {
+        gui.borrow().save_button.connect_clicked(move |button| {
+            if let Some(popover) = button.ancestor(gtk::Popover::static_type()) {
+                if let Some(popover) = popover.downcast_ref::<gtk::Popover>() {
+                    popover.popdown();
+                }
+            }
             save_config_file(gui_clone.clone());
         });
 
@@ -52,12 +57,24 @@ fn build_ui(app: &Application) {
         let copy_button = Button::with_label("Copyright");
 
         let gui_clone = gui.clone();
-        undo_button.connect_clicked(move |_| {
+        undo_button.connect_clicked(move |button| {
+            if let Some(popover) = button.ancestor(gtk::Popover::static_type()) {
+                if let Some(popover) = popover.downcast_ref::<gtk::Popover>() {
+                    popover.popdown();
+                }
+            }
+
             undo_changes(gui_clone.clone());
         });
 
         let gui_clone = gui.clone();
-        copy_button.connect_clicked(move |_| {
+        copy_button.connect_clicked(move |button| {
+            if let Some(popover) = button.ancestor(gtk::Popover::static_type()) {
+                if let Some(popover) = popover.downcast_ref::<gtk::Popover>() {
+                    popover.popdown();
+                }
+            }
+
             gui_clone.borrow_mut().custom_info_popup(
                 "Copyright (C) 2024 HyprUtils",
                 "This program is free software; you can redistribute it and/or
