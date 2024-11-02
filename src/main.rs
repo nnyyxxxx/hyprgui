@@ -112,32 +112,47 @@ fn filter_options(gui: Rc<RefCell<gui::ConfigGUI>>, search_text: impl AsRef<str>
     let gui_ref = gui.borrow();
     let search_text = search_text.as_ref().to_lowercase();
 
+    gui_ref.sidebar.set_visible(search_text.is_empty());
+
     for (category, config_widget) in &gui_ref.config_widgets {
-        if let Some(scrolled) = config_widget.scrolled_window.child() {
-            if let Some(container) = scrolled.first_child() {
-                let mut should_show = false;
-                
-                let mut child = container.first_child();
-                while let Some(widget) = child {
-                    if let Some(box_widget) = widget.downcast_ref::<gtk::Box>() {
-                        if let Some(label_box) = box_widget.first_child() {
-                            if let Some(label) = label_box.first_child() {
-                                if let Some(label) = label.downcast_ref::<gtk::Label>() {
-                                    if label.text().to_lowercase().contains(&search_text) {
-                                        should_show = true;
-                                        widget.set_visible(true);
-                                    } else {
-                                        widget.set_visible(false);
+        if search_text.is_empty() {
+            config_widget.scrolled_window.set_visible(true);
+            if let Some(scrolled) = config_widget.scrolled_window.child() {
+                if let Some(container) = scrolled.first_child() {
+                    let mut child = container.first_child();
+                    while let Some(widget) = child {
+                        widget.set_visible(true);
+                        child = widget.next_sibling();
+                    }
+                }
+            }
+        } else {
+            let mut has_matches = false;
+
+            if let Some(scrolled) = config_widget.scrolled_window.child() {
+                if let Some(container) = scrolled.first_child() {
+                    let mut child = container.first_child();
+                    while let Some(widget) = child {
+                        if let Some(box_widget) = widget.downcast_ref::<gtk::Box>() {
+                            if let Some(label_box) = box_widget.first_child() {
+                                if let Some(label) = label_box.first_child() {
+                                    if let Some(label) = label.downcast_ref::<gtk::Label>() {
+                                        if label.text().to_lowercase().contains(&search_text) {
+                                            has_matches = true;
+                                            widget.set_visible(true);
+                                        } else {
+                                            widget.set_visible(false);
+                                        }
                                     }
                                 }
                             }
                         }
+                        child = widget.next_sibling();
                     }
-                    child = widget.next_sibling();
                 }
-                
-                config_widget.scrolled_window.set_visible(should_show);
             }
+
+            config_widget.scrolled_window.set_visible(has_matches);
         }
     }
 }

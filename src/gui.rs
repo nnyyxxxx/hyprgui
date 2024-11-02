@@ -74,7 +74,7 @@ pub struct ConfigGUI {
     content_box: Box,
     changed_options: Rc<RefCell<HashMap<(String, String), String>>>,
     stack: Stack,
-    sidebar: StackSidebar,
+    pub sidebar: StackSidebar,
     load_config_button: Button,
     save_config_button: Button,
     pub gear_menu: Rc<RefCell<Popover>>,
