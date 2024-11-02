@@ -122,6 +122,11 @@ impl ConfigGUI {
 
         gear_menu.borrow().set_child(Some(&gear_menu_box));
 
+        let gear_menu_clone = gear_menu.clone();
+        gear_button.connect_clicked(move |_| {
+            gear_menu_clone.borrow().popup();
+        });
+
         let popover_clone = popover.clone();
         let search_entry_clone = search_entry.clone();
         search_button.connect_clicked(move |_| {
