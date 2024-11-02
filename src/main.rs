@@ -114,7 +114,7 @@ fn filter_options(gui: Rc<RefCell<gui::ConfigGUI>>, search_text: impl AsRef<str>
 
     gui_ref.sidebar.set_visible(search_text.is_empty());
 
-    for (category, config_widget) in &gui_ref.config_widgets {
+    for config_widget in gui_ref.config_widgets.values() {
         if search_text.is_empty() {
             config_widget.scrolled_window.set_visible(true);
             if let Some(scrolled) = config_widget.scrolled_window.child() {
