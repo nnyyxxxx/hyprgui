@@ -53,6 +53,11 @@ fn build_ui(app: &Application) {
             save_config_file(gui_clone.clone());
         });
 
+        let gui_clone = gui.clone();
+        gui.borrow().search_entry.connect_changed(move |entry| {
+            filter_options(gui_clone.clone(), entry.text());
+        });
+
         let undo_button = Button::with_label("Undo Changes");
         let copy_button = Button::with_label("Copyright");
 
@@ -101,6 +106,54 @@ along with this program; if not, see
     }
 
     gui.borrow().window.present();
+}
+
+fn filter_options(gui: Rc<RefCell<gui::ConfigGUI>>, search_text: impl AsRef<str>) {
+    let gui_ref = gui.borrow();
+    let search_text = search_text.as_ref().to_lowercase();
+
+    gui_ref.sidebar.set_visible(search_text.is_empty());
+
+    for config_widget in gui_ref.config_widgets.values() {
+        if search_text.is_empty() {
+            config_widget.scrolled_window.set_visible(true);
+            if let Some(scrolled) = config_widget.scrolled_window.child() {
+                if let Some(container) = scrolled.first_child() {
+                    let mut child = container.first_child();
+                    while let Some(widget) = child {
+                        widget.set_visible(true);
+                        child = widget.next_sibling();
+                    }
+                }
+            }
+        } else {
+            let mut has_matches = false;
+
+            if let Some(scrolled) = config_widget.scrolled_window.child() {
+                if let Some(container) = scrolled.first_child() {
+                    let mut child = container.first_child();
+                    while let Some(widget) = child {
+                        widget.set_visible(false);
+                        if let Some(box_widget) = widget.downcast_ref::<gtk::Box>() {
+                            if let Some(label_box) = box_widget.first_child() {
+                                if let Some(label) = label_box.first_child() {
+                                    if let Some(label) = label.downcast_ref::<gtk::Label>() {
+                                        if label.text().to_lowercase().contains(&search_text) {
+                                            has_matches = true;
+                                            widget.set_visible(true);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        child = widget.next_sibling();
+                    }
+                }
+            }
+
+            config_widget.scrolled_window.set_visible(has_matches);
+        }
+    }
 }
 
 fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {

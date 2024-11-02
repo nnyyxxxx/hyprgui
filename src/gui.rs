@@ -1,7 +1,7 @@
 use gtk::{
     gdk, glib, prelude::*, Application, ApplicationWindow, Box, Button, ColorButton, DropDown,
     Entry, Frame, HeaderBar, Image, Label, MessageDialog, Orientation, Popover, ScrolledWindow,
-    SpinButton, Stack, StackSidebar, StringList, Switch, Widget,
+    SearchEntry, SpinButton, Stack, StackSidebar, StringList, Switch, Widget,
 };
 
 use hyprparser::HyprlandConfig;
@@ -68,12 +68,13 @@ fn add_dropdown_option(
 
 pub struct ConfigGUI {
     pub window: ApplicationWindow,
-    config_widgets: HashMap<String, ConfigWidget>,
+    pub config_widgets: HashMap<String, ConfigWidget>,
     pub save_button: Button,
+    pub search_entry: SearchEntry,
     content_box: Box,
     changed_options: Rc<RefCell<HashMap<(String, String), String>>>,
     stack: Stack,
-    sidebar: StackSidebar,
+    pub sidebar: StackSidebar,
     load_config_button: Button,
     save_config_button: Button,
     pub gear_menu: Rc<RefCell<Popover>>,
@@ -104,6 +105,15 @@ impl ConfigGUI {
         gear_menu_box.set_margin_start(5);
         gear_menu_box.set_margin_end(5);
 
+        let search_button = Button::from_icon_name("system-search-symbolic");
+        let search_entry = SearchEntry::new();
+        search_entry.set_width_chars(25);
+
+        let popover = gtk::Popover::new();
+        popover.set_child(Some(&search_entry));
+        popover.set_position(gtk::PositionType::Bottom);
+        popover.set_parent(&search_button);
+
         let save_config_button = Button::with_label("Save HyprGUI Config");
         let load_config_button = Button::with_label("Load HyprGUI Config");
 
@@ -112,10 +122,33 @@ impl ConfigGUI {
 
         gear_menu.borrow().set_child(Some(&gear_menu_box));
 
-        let gear_menu_clone = gear_menu.clone();
-        gear_button.connect_clicked(move |_| {
-            gear_menu_clone.borrow().popup();
+        let popover_clone = popover.clone();
+        let search_entry_clone = search_entry.clone();
+        search_button.connect_clicked(move |_| {
+            if !popover_clone.is_visible() {
+                popover_clone.popup();
+                search_entry_clone.grab_focus();
+            }
         });
+
+        let popover_clone = popover.clone();
+        search_entry.connect_activate(move |_| {
+            popover_clone.popdown();
+        });
+
+        let popover_clone = popover.clone();
+        let key_controller = gtk::EventControllerKey::new();
+        key_controller.connect_key_pressed(move |_, key, _, _| {
+            if key == gdk::Key::Escape {
+                popover_clone.popdown();
+                glib::Propagation::Stop
+            } else {
+                glib::Propagation::Proceed
+            }
+        });
+        search_entry.add_controller(key_controller);
+
+        header_bar.pack_start(&search_button);
 
         let save_button = Button::with_label("Save");
         header_bar.pack_end(&save_button);
@@ -141,6 +174,7 @@ impl ConfigGUI {
             window,
             config_widgets,
             save_button,
+            search_entry,
             content_box,
             changed_options: Rc::new(RefCell::new(HashMap::new())),
             stack,
@@ -562,8 +596,8 @@ fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
 }
 
 pub struct ConfigWidget {
-    options: HashMap<String, Widget>,
-    scrolled_window: ScrolledWindow,
+    pub options: HashMap<String, Widget>,
+    pub scrolled_window: ScrolledWindow,
 }
 
 impl ConfigWidget {
