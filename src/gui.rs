@@ -175,56 +175,72 @@ impl ConfigGUI {
 
     pub fn setup_config_buttons(gui: Rc<RefCell<ConfigGUI>>) {
         let gui_clone = Rc::clone(&gui);
-        gui.borrow().load_config_button.connect_clicked(move |_| {
-            let gui = Rc::clone(&gui_clone);
-            glib::MainContext::default().spawn_local(async move {
-                let file_chooser = gtk::FileChooserDialog::new(
-                    Some("Load HyprGUI Config"),
-                    Some(&gui.borrow().window),
-                    gtk::FileChooserAction::Open,
-                    &[
-                        ("Cancel", gtk::ResponseType::Cancel),
-                        ("Open", gtk::ResponseType::Accept),
-                    ],
-                );
-
-                if file_chooser.run_future().await == gtk::ResponseType::Accept {
-                    if let Some(file) = file_chooser.file() {
-                        if let Some(path) = file.path() {
-                            gui.borrow_mut().load_hyprgui_config(&path);
-                        }
+        gui.borrow()
+            .load_config_button
+            .connect_clicked(move |button| {
+                if let Some(popover) = button.ancestor(gtk::Popover::static_type()) {
+                    if let Some(popover) = popover.downcast_ref::<gtk::Popover>() {
+                        popover.popdown();
                     }
                 }
-                file_chooser.close();
+
+                let gui = Rc::clone(&gui_clone);
+                glib::MainContext::default().spawn_local(async move {
+                    let file_chooser = gtk::FileChooserDialog::new(
+                        Some("Load HyprGUI Config"),
+                        Some(&gui.borrow().window),
+                        gtk::FileChooserAction::Open,
+                        &[
+                            ("Cancel", gtk::ResponseType::Cancel),
+                            ("Open", gtk::ResponseType::Accept),
+                        ],
+                    );
+
+                    if file_chooser.run_future().await == gtk::ResponseType::Accept {
+                        if let Some(file) = file_chooser.file() {
+                            if let Some(path) = file.path() {
+                                gui.borrow_mut().load_hyprgui_config(&path);
+                            }
+                        }
+                    }
+                    file_chooser.close();
+                });
             });
-        });
 
         let gui_clone = Rc::clone(&gui);
-        gui.borrow().save_config_button.connect_clicked(move |_| {
-            let gui = Rc::clone(&gui_clone);
-            glib::MainContext::default().spawn_local(async move {
-                let file_chooser = gtk::FileChooserDialog::new(
-                    Some("Save HyprGUI Config"),
-                    Some(&gui.borrow().window),
-                    gtk::FileChooserAction::Save,
-                    &[
-                        ("Cancel", gtk::ResponseType::Cancel),
-                        ("Save", gtk::ResponseType::Accept),
-                    ],
-                );
-
-                file_chooser.set_current_name("hyprgui_config.json");
-
-                if file_chooser.run_future().await == gtk::ResponseType::Accept {
-                    if let Some(file) = file_chooser.file() {
-                        if let Some(path) = file.path() {
-                            gui.borrow_mut().save_hyprgui_config(&path);
-                        }
+        gui.borrow()
+            .save_config_button
+            .connect_clicked(move |button| {
+                if let Some(popover) = button.ancestor(gtk::Popover::static_type()) {
+                    if let Some(popover) = popover.downcast_ref::<gtk::Popover>() {
+                        popover.popdown();
                     }
                 }
-                file_chooser.close();
+
+                let gui = Rc::clone(&gui_clone);
+                glib::MainContext::default().spawn_local(async move {
+                    let file_chooser = gtk::FileChooserDialog::new(
+                        Some("Save HyprGUI Config"),
+                        Some(&gui.borrow().window),
+                        gtk::FileChooserAction::Save,
+                        &[
+                            ("Cancel", gtk::ResponseType::Cancel),
+                            ("Save", gtk::ResponseType::Accept),
+                        ],
+                    );
+
+                    file_chooser.set_current_name("hyprgui_config.json");
+
+                    if file_chooser.run_future().await == gtk::ResponseType::Accept {
+                        if let Some(file) = file_chooser.file() {
+                            if let Some(path) = file.path() {
+                                gui.borrow_mut().save_hyprgui_config(&path);
+                            }
+                        }
+                    }
+                    file_chooser.close();
+                });
             });
-        });
     }
 
     fn load_hyprgui_config(&mut self, path: &PathBuf) {
