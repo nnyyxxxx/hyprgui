@@ -133,6 +133,7 @@ fn filter_options(gui: Rc<RefCell<gui::ConfigGUI>>, search_text: impl AsRef<str>
                 if let Some(container) = scrolled.first_child() {
                     let mut child = container.first_child();
                     while let Some(widget) = child {
+                        widget.set_visible(false);
                         if let Some(box_widget) = widget.downcast_ref::<gtk::Box>() {
                             if let Some(label_box) = box_widget.first_child() {
                                 if let Some(label) = label_box.first_child() {
@@ -140,8 +141,6 @@ fn filter_options(gui: Rc<RefCell<gui::ConfigGUI>>, search_text: impl AsRef<str>
                                         if label.text().to_lowercase().contains(&search_text) {
                                             has_matches = true;
                                             widget.set_visible(true);
-                                        } else {
-                                            widget.set_visible(false);
                                         }
                                     }
                                 }
