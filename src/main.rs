@@ -53,6 +53,11 @@ fn build_ui(app: &Application) {
             save_config_file(gui_clone.clone());
         });
 
+        let gui_clone = gui.clone();
+        gui.borrow().search_entry.connect_changed(move |entry| {
+            filter_options(gui_clone.clone(), entry.text());
+        });
+
         let undo_button = Button::with_label("Undo Changes");
         let copy_button = Button::with_label("Copyright");
 
@@ -101,6 +106,13 @@ along with this program; if not, see
     }
 
     gui.borrow().window.present();
+}
+
+fn filter_options(gui: Rc<RefCell<gui::ConfigGUI>>, search_text: impl AsRef<str>) {
+    let gui_ref = gui.borrow();
+    let search_text = search_text.as_ref().to_lowercase();
+
+    for (category, config_widget) in &gui_ref.config_widgets {}
 }
 
 fn save_config_file(gui: Rc<RefCell<gui::ConfigGUI>>) {
