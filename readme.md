@@ -41,7 +41,7 @@ paru -S <package>
 You can install HyprGUI with Nix in three ways:
 
 #### NixOS Configuration
-Add the following Nix code to your NixOS Configuration, usually located in /etc/nixos/configuration.nix
+Add the following Nix code to your NixOS Configuration, usually located in `/etc/nixos/configuration.nix`
 ```nix
 environment.systemPackages = [
   pkgs.hyprgui
