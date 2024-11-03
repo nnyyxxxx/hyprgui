@@ -37,6 +37,36 @@ Or, if you're using an [AUR Helper](https://wiki.archlinux.org/title/AUR_helpers
 paru -S <package>
 ```
 
+### Nix
+You can install HyprGUI with Nix in three ways:
+
+#### NixOS Configuration
+Add the following Nix code to your NixOS Configuration, usually located in /etc/nixos/configuration.nix
+```nix
+environment.systemPackages = [
+  pkgs.hyprgui
+];
+```
+
+#### nix-env
+On NixOS:
+```bash
+nix-env -iA nixos.hyprgui
+```
+
+On Non NixOS:
+```bash
+# without flakes:
+nix-env -iA nixpkgs.hyprgui
+# with flakes:
+nix profile install nixpkgs#hyprgui
+```
+
+#### nix-shell
+```bash
+nix-shell -p hyprgui
+```
+
 ## Building from source
 1. Install Rust (preferably `rustup`) through your distro's package or [the official script](https://www.rust-lang.org/tools/install)
 2. Install `git`, `pango` and `gtk4`
