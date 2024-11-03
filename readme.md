@@ -51,9 +51,9 @@ paru -S <package>
 
 ## Credits:
 - [Nyx](https://github.com/nnyyxxxx) - Implementing the parser, rest of the GUI, and maintaining the project
-- [Adam](https://github.com/adamperkowski) - Implementing the base GUI, maintaining the AUR packages and the project alongside Nyx
+- [Adam](https://github.com/adamperkowski) - Implementing the base GUI, maintaining the AUR packages and the project
 - [Vaxry](https://github.com/vaxerski) - Hyprland
 - [rust-gtk](https://github.com/gtk-rs/gtk4-rs) - The GTK4 library
-- [Hyprland](https://github.com/hyprwm/Hyprland) - The window manager
+- [Hyprland](https://github.com/hyprwm/Hyprland) - The wayland compositor
 
 <h6 align='center'>Copyright (C) 2024 HyprUtils<h6>
