@@ -14,6 +14,8 @@ Comes with a custom [hyprparser](https://github.com/nnyyxxxx/hyprparser) for Hyp
 
 ## Installation
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/hyprgui.svg)](https://repology.org/project/hyprgui/versions)
+
 ### GitHub Releases
 See HyprGUI's [releases page](https://github.com/nnyyxxxx/hyprgui/releases) for downloadable binaries.
 
@@ -33,6 +35,36 @@ makepkg -si
 Or, if you're using an [AUR Helper](https://wiki.archlinux.org/title/AUR_helpers), it's even simpler (using [paru](https://github.com/Morganamilo/paru) as an example):
 ```bash
 paru -S <package>
+```
+
+### Nix
+You can install HyprGUI with Nix in three ways:
+
+#### NixOS Configuration
+Add the following Nix code to your NixOS Configuration, usually located in `/etc/nixos/configuration.nix`
+```nix
+environment.systemPackages = [
+  pkgs.hyprgui
+];
+```
+
+#### nix-env
+On NixOS:
+```bash
+nix-env -iA nixos.hyprgui
+```
+
+On Non NixOS:
+```bash
+# without flakes:
+nix-env -iA nixpkgs.hyprgui
+# with flakes:
+nix profile install nixpkgs#hyprgui
+```
+
+#### nix-shell
+```bash
+nix-shell -p hyprgui
 ```
 
 ## Building from source
