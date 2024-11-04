@@ -4,6 +4,7 @@ use std::{cell::RefCell, env, fs, path::Path, path::PathBuf, rc::Rc};
 
 mod gui;
 mod modules;
+mod widgets;
 
 const CONFIG_PATH: &str = ".config/hypr/hyprland.conf";
 const BACKUP_SUFFIX: &str = "-bak";
