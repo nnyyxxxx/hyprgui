@@ -399,9 +399,9 @@ dependencies = [
 
 [[package]]
 name = "hyprparser"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c690d71166f921234b6da67144f1b9689ae45e833dcd3c6f4996a54c552bc83e"
+checksum = "fd9d74ce5b829a38dd95ef0206b44a7c396ff63c3c36edd798a2bc9be4071269"
 
 [[package]]
 name = "indexmap"
