@@ -4,7 +4,7 @@ version = "0.1.7"
 authors = ["Nyx <nnyyxxxx@protonmail.com>", "Adam Perkowski <adas1per@protonmail.com>"]
 license = "GPL-2.0"
 description = "GUI for configuring Hyprland!"
-repository = "https://github.com/nnyyxxxx/hyprlandgui.git"
+repository = "https://github.com/hyprutils/hyprgui.git"
 readme = "readme.md"
 keywords = [
     "gui",
