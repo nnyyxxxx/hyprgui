@@ -332,5 +332,16 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
 }
 
 fn get_config_path() -> PathBuf {
-    Path::new(&env::var("HOME").unwrap_or_else(|_| ".".to_string())).join(CONFIG_PATH)
+    // Check if the `HYPRLAND_CONFIG` environment variable is set
+    if let Ok(config_dir) = env::var("HYPRLAND_CONFIG") {
+        let path = PathBuf::from(config_dir).join("hyprland.conf");
+        if path.exists() {
+            return path;
+        }
+    }
+    // Fallback to the default configuration path in the home directory
+    dirs::home_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join(".config/hypr/hyprland.conf")
 }
+
