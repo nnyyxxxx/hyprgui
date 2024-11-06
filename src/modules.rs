@@ -218,7 +218,7 @@ impl ConfigWidget {
                     &container,
                     &mut options,
                     "shadow:render_power",
-                    "Shadow Render Power", 
+                    "Shadow Render Power",
                     "in what power to render the falloff (more power, the faster the falloff) [1 - 4]",
                 );
                 WidgetBuilder::add_bool_option(
