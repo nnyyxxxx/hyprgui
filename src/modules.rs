@@ -194,6 +194,33 @@ impl ConfigWidget {
                     "Fullscreen Opacity",
                     "opacity of fullscreen windows. [0.0 - 1.0]",
                 );
+                WidgetBuilder::add_section(
+                    &container,
+                    "Shadow",
+                    "Configure shadow settings.",
+                    first_section.clone(),
+                );
+                WidgetBuilder::add_bool_option(
+                    &container,
+                    &mut options,
+                    "shadow:enabled",
+                    "Enable Shadows",
+                    "enable drop shadows on windows",
+                );
+                WidgetBuilder::add_int_option(
+                    &container,
+                    &mut options,
+                    "shadow:range",
+                    "Shadow Range",
+                    "Shadow range (\"size\") in layout px",
+                );
+                WidgetBuilder::add_int_option(
+                    &container,
+                    &mut options,
+                    "shadow:render_power",
+                    "Shadow Render Power", 
+                    "in what power to render the falloff (more power, the faster the falloff) [1 - 4]",
+                );
                 WidgetBuilder::add_bool_option(
                     &container,
                     &mut options,
