@@ -8,6 +8,7 @@ mod widgets;
 
 const CONFIG_PATH: &str = ".config/hypr/hyprland.conf";
 const BACKUP_SUFFIX: &str = "-bak";
+static CONFIG_PATH_OVERRIDE: std::sync::Mutex<Option<PathBuf>> = std::sync::Mutex::new(None);
 
 fn main() {
     let app = Application::builder()
@@ -76,7 +77,10 @@ fn build_ui(app: &Application) {
                 Some("Select Hyprland Config"),
                 Some(&gui_clone.borrow().window),
                 FileChooserAction::Open,
-                &[("Cancel", gtk::ResponseType::Cancel), ("Open", gtk::ResponseType::Accept)],
+                &[
+                    ("Cancel", gtk::ResponseType::Cancel),
+                    ("Open", gtk::ResponseType::Accept),
+                ],
             );
 
             let gui_clone_inner = gui_clone.clone();
@@ -84,6 +88,9 @@ fn build_ui(app: &Application) {
                 if response == gtk::ResponseType::Accept {
                     if let Some(file) = dialog.file() {
                         if let Some(path) = file.path() {
+                            if let Ok(mut override_path) = CONFIG_PATH_OVERRIDE.lock() {
+                                *override_path = Some(path.clone());
+                            }
                             let config_str = match fs::read_to_string(&path) {
                                 Ok(s) => s,
                                 Err(e) => {
@@ -376,5 +383,10 @@ fn undo_changes(gui: Rc<RefCell<gui::ConfigGUI>>) {
 }
 
 fn get_config_path() -> PathBuf {
+    if let Ok(override_path) = CONFIG_PATH_OVERRIDE.lock() {
+        if let Some(path) = &*override_path {
+            return path.clone();
+        }
+    }
     Path::new(&env::var("HOME").unwrap_or_else(|_| ".".to_string())).join(CONFIG_PATH)
 }
