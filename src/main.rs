@@ -1,4 +1,4 @@
-use gtk::{prelude::*, Application, Button};
+use gtk::{prelude::*, Application, Button, FileChooserAction, FileChooserDialog};
 use hyprparser::parse_config;
 use std::{cell::RefCell, env, fs, path::Path, path::PathBuf, rc::Rc};
 
@@ -62,6 +62,49 @@ fn build_ui(app: &Application) {
 
         let undo_button = Button::with_label("Undo Changes");
         let copy_button = Button::with_label("Copyright");
+        let choose_config_button = Button::with_label("Choose Hyprland Config");
+
+        let gui_clone = gui.clone();
+        choose_config_button.connect_clicked(move |button| {
+            if let Some(popover) = button.ancestor(gtk::Popover::static_type()) {
+                if let Some(popover) = popover.downcast_ref::<gtk::Popover>() {
+                    popover.popdown();
+                }
+            }
+
+            let dialog = FileChooserDialog::new(
+                Some("Select Hyprland Config"),
+                Some(&gui_clone.borrow().window),
+                FileChooserAction::Open,
+                &[("Cancel", gtk::ResponseType::Cancel), ("Open", gtk::ResponseType::Accept)],
+            );
+
+            let gui_clone_inner = gui_clone.clone();
+            dialog.connect_response(move |dialog, response| {
+                if response == gtk::ResponseType::Accept {
+                    if let Some(file) = dialog.file() {
+                        if let Some(path) = file.path() {
+                            let config_str = match fs::read_to_string(&path) {
+                                Ok(s) => s,
+                                Err(e) => {
+                                    gui_clone_inner.borrow_mut().custom_error_popup_critical(
+                                        "Reading failed",
+                                        &format!("Failed to read the configuration file: {}", e),
+                                        true,
+                                    );
+                                    String::new()
+                                }
+                            };
+                            let parsed_config = parse_config(&config_str);
+                            gui_clone_inner.borrow_mut().load_config(&parsed_config);
+                        }
+                    }
+                }
+                dialog.close();
+            });
+
+            dialog.show();
+        });
 
         let gui_clone = gui.clone();
         undo_button.connect_clicked(move |button| {
@@ -101,6 +144,7 @@ along with this program; if not, see
 
         if let Some(gear_menu_box) = gui.borrow().gear_menu.borrow().child() {
             if let Some(box_widget) = gear_menu_box.downcast_ref::<gtk::Box>() {
+                box_widget.append(&choose_config_button);
                 box_widget.append(&undo_button);
                 box_widget.append(&copy_button);
             }
