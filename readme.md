@@ -5,7 +5,7 @@
 <img src='hyprgui.png' width='200' height='200'>
 
 An unofficial GUI for configuring Hyprland, built with GTK4 and Rust. 🚀🦀<br>
-Comes with a custom [hyprparser](https://github.com/nnyyxxxx/hyprparser) for Hyprland's configuration file. (Rust btw) 🦀
+Comes with a custom [hyprparser](https://github.com/hyprutils/hyprparser) for Hyprland's configuration file. (Rust btw) 🦀
 
 ## Preview
 ![Preview](.github/preview.png)
@@ -17,7 +17,7 @@ Comes with a custom [hyprparser](https://github.com/nnyyxxxx/hyprparser) for Hyp
 [![Packaging status](https://repology.org/badge/vertical-allrepos/hyprgui.svg)](https://repology.org/project/hyprgui/versions)
 
 ### GitHub Releases
-See HyprGUI's [releases page](https://github.com/nnyyxxxx/hyprgui/releases) for downloadable binaries.
+See HyprGUI's [releases page](https://github.com/hyprutils/hyprgui/releases) for downloadable binaries.
 
 ### Arch Linux
 There are 2 different [AUR](https://aur.archlinux.org) packages available:
@@ -71,7 +71,7 @@ nix-shell -p hyprgui
 1. Install Rust (preferably `rustup`) through your distro's package or [the official script](https://www.rust-lang.org/tools/install)
 2. Install `git`, `pango` and `gtk4`
 3. Clone this repository:
-`git clone https://github.com/nnyyxxxx/hyprgui && cd hyprgui`
+`git clone https://github.com/hyprutils/hyprgui && cd hyprgui`
 4. Compile the app with `cargo build --release` or run it directly with `cargo run --release`
 
 ## TODO:

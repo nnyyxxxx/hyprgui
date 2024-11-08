@@ -12,7 +12,7 @@ static CONFIG_PATH_OVERRIDE: std::sync::Mutex<Option<PathBuf>> = std::sync::Mute
 
 fn main() {
     let app = Application::builder()
-        .application_id("nnyyxxxx.hyprgui")
+        .application_id("hyprutils.hyprgui")
         .build();
 
     app.connect_activate(build_ui);
