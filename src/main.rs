@@ -90,20 +90,28 @@ fn build_ui(app: &Application) {
                         if let Some(path) = file.path() {
                             if let Ok(mut override_path) = CONFIG_PATH_OVERRIDE.lock() {
                                 *override_path = Some(path.clone());
+                                let config_str = match fs::read_to_string(&path) {
+                                    Ok(s) => s,
+                                    Err(e) => {
+                                        gui_clone_inner.borrow_mut().custom_error_popup_critical(
+                                            "Reading failed",
+                                            &format!(
+                                                "Failed to read the configuration file: {}",
+                                                e
+                                            ),
+                                            true,
+                                        );
+                                        String::new()
+                                    }
+                                };
+                                let parsed_config = parse_config(&config_str);
+                                gui_clone_inner.borrow_mut().load_config(&parsed_config);
+                                gui_clone_inner
+                                    .borrow_mut()
+                                    .get_changes()
+                                    .borrow_mut()
+                                    .clear();
                             }
-                            let config_str = match fs::read_to_string(&path) {
-                                Ok(s) => s,
-                                Err(e) => {
-                                    gui_clone_inner.borrow_mut().custom_error_popup_critical(
-                                        "Reading failed",
-                                        &format!("Failed to read the configuration file: {}", e),
-                                        true,
-                                    );
-                                    String::new()
-                                }
-                            };
-                            let parsed_config = parse_config(&config_str);
-                            gui_clone_inner.borrow_mut().load_config(&parsed_config);
                         }
                     }
                 }
