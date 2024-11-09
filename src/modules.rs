@@ -194,59 +194,72 @@ impl ConfigWidget {
                     "Fullscreen Opacity",
                     "opacity of fullscreen windows. [0.0 - 1.0]",
                 );
+                WidgetBuilder::add_section(
+                    &container,
+                    "Shadow",
+                    "Configure shadow settings.",
+                    first_section.clone(),
+                );
                 WidgetBuilder::add_bool_option(
                     &container,
                     &mut options,
-                    "drop_shadow",
-                    "Drop Shadow",
+                    "shadow:enabled",
+                    "Enable Shadows",
                     "enable drop shadows on windows",
                 );
                 WidgetBuilder::add_int_option(
                     &container,
                     &mut options,
-                    "shadow_range",
+                    "shadow:range",
                     "Shadow Range",
                     "Shadow range (\"size\") in layout px",
                 );
                 WidgetBuilder::add_int_option(
                     &container,
                     &mut options,
-                    "shadow_render_power",
+                    "shadow:render_power",
                     "Shadow Render Power",
                     "in what power to render the falloff (more power, the faster the falloff) [1 - 4]",
                 );
                 WidgetBuilder::add_bool_option(
                     &container,
                     &mut options,
-                    "shadow_ignore_window",
+                    "shadow:sharp",
+                    "Shadow Sharp",
+                    "if enabled, will make the shadows sharp, akin to an infinite render power",
+                );
+                WidgetBuilder::add_bool_option(
+                    &container,
+                    &mut options,
+                    "shadow:ignore_window",
                     "Shadow Ignore Window",
                     "if true, the shadow will not be rendered behind the window itself, only around it.",
                 );
                 WidgetBuilder::add_color_option(
                     &container,
                     &mut options,
-                    "col.shadow",
+                    "shadow:color",
                     "Shadow Color",
                     "shadow's color. Alpha dictates shadow's opacity.",
                 );
                 WidgetBuilder::add_color_option(
                     &container,
                     &mut options,
-                    "col.shadow_inactive",
+                    "shadow:color_inactive",
                     "Inactive Shadow Color",
-                    "inactive shadow color. (if not set, will fall back to col.shadow)",
+                    "inactive shadow color. (if not set, will fall back to shadow:color)",
                 );
                 WidgetBuilder::add_string_option(
                     &container,
                     &mut options,
-                    "shadow_offset",
+                    "shadow:offset",
                     "Shadow Offset",
                     "shadow's rendering offset. Format: \"x y\" (e.g. \"0 0\")",
                 );
                 WidgetBuilder::add_float_option(
                     &container,
                     &mut options,
-                    "shadow_scale",
+                    "shadow:scale",
                     "Shadow Scale",
                     "shadow's scale. [0.0 - 1.0]",
                 );

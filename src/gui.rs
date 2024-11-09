@@ -132,6 +132,8 @@ pub fn get_option_limits(name: &str, description: &str) -> (f64, f64, f64) {
                 (0.0, 1.0, 0.1)
             } else if description.contains("[0/1]") {
                 (0.0, 1.0, 1.0)
+            } else if description.contains("[1 - 4]") {
+                (0.0, 4.0, 1.0)
             } else if description.contains("[0/1/2]") {
                 (0.0, 2.0, 1.0)
             } else if name.contains("opacity") || name.contains("ratio") {
