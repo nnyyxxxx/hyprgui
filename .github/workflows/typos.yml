@@ -14,4 +14,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run spellcheck
-        uses: crate-ci/typos@v1.25.0
+        uses: crate-ci/typos@v1.27.3
