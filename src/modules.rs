@@ -1598,9 +1598,9 @@ impl ConfigWidget {
                 WidgetBuilder::add_bool_option(
                     &container,
                     &mut options,
-                    "allow_dumb_copy",
-                    "Allow Dumb Copy",
-                    "Makes HW cursors work on Nvidia, at the cost of a possible hitch whenever the image changes.",
+                    "use_cpu_buffer",
+                    "Use CPU Buffer",
+                    "Makes HW cursors use a CPU buffer. Required on Nvidia to have HW cursors. Experimental.",
                 );
             }
             "debug" => {
