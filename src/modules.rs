@@ -1099,6 +1099,20 @@ impl ConfigWidget {
                     "Locked Inactive Color",
                     "inactive locked group border color",
                 );
+                WidgetBuilder::add_bool_option(
+                    &container,
+                    &mut options,
+                    "group_on_movetoworkspace",
+                    "Group on Move to Workspace",
+                    "whether using movetoworkspace[silent] will merge the window into the workspace's solitary unlocked group",
+                );
+                WidgetBuilder::add_bool_option(
+                    &container,
+                    &mut options,
+                    "merge_groups_on_groupbar",
+                    "Merge Groups on Groupbar",
+                    "whether one group will be merged with another when dragged into its groupbar",
+                );
             }
             "misc" => {
                 WidgetBuilder::add_section(
